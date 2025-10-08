@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import dotenv from "dotenv";
+import { signUp } from "../controller/auth.controller.js";
 
 dotenv.config();
 
@@ -10,9 +11,6 @@ authRoute.post("/login", (req, res) => {
   res.send("Login endpoint");
 });
 
-authRoute.post("/register", (req, res) => {
-  // Handle registration logic here
-  res.send("Register endpoint");
-});
+authRoute.post("/signup", signUp);
 
 export default authRoute;
