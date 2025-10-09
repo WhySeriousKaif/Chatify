@@ -1,6 +1,6 @@
 import { generateToken } from "../config/utils.js";
 import { senderWelcomeEmail } from "../emails/emailHandler.js";
-import User from "../models/User.model.js";
+import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { ENV } from "../config/env.js";
 
