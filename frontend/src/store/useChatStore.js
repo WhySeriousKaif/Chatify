@@ -54,9 +54,26 @@ export const useChatStore = create((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
-  sendMessage: async (receiverId, messageData) => {
+  getMessagesByUserId: async (userId) => {
+    set({ isMessagesLoading: true });
     try {
-      const response = await axiosInstance.post(`/messages/send/${receiverId}`, messageData);
+      const response = await axiosInstance.get(`/messages/${userId}`);
+      set({ messages: response.data });
+    } catch (error) {
+      toast.error("Error fetching messages:", error);
+    } finally {
+      set({ isMessagesLoading: false });
+    }
+  },
+  sendMessage: async (messageData) => {
+    try {
+      const { selectedUser } = get();
+      if (!selectedUser) {
+        toast.error("No user selected");
+        return;
+      }
+      
+      const response = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
       // Add the new message to the current messages
       set((state) => ({
         messages: [...state.messages, response.data]
@@ -66,6 +83,14 @@ export const useChatStore = create((set, get) => ({
       toast.error("Error sending message:", error);
       throw error;
     }
+  },
+  subscribeToMessages: () => {
+    // TODO: Implement WebSocket subscription
+    console.log("Subscribing to messages...");
+  },
+  unsubscribeFromMessages: () => {
+    // TODO: Implement WebSocket unsubscription
+    console.log("Unsubscribing from messages...");
   }
 
 }));

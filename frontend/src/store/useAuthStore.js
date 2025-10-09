@@ -12,7 +12,7 @@ export const useAuthStore = create((set) => ({
     checkAuth: async () => {
        try{
         const response = await axiosInstance.get("/auth/check")
-        set({authUser:response.data.user,isCheckingAuth:false})
+        set({authUser:response.data,isCheckingAuth:false})
        }catch(error){
         console.log(error)
         set({authUser:null,isCheckingAuth:false})
@@ -25,7 +25,7 @@ export const useAuthStore = create((set) => ({
         try{
             set({isSigningUp:true})
             const response = await axiosInstance.post("/auth/signup",formData)
-            set({authUser:response.data})
+            set({authUser:response.data.savedUser})
             toast.success("Signup successful")
         }catch(error){
             console.log(error)
