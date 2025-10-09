@@ -2,7 +2,7 @@ import { generateToken } from "../config/utils.js";
 import { senderWelcomeEmail } from "../emails/emailHandler.js";
 import User from "../models/User.model.js";
 import bcrypt from "bcryptjs";
-import {ENV} from "../config/env.js";
+import { ENV } from "../config/env.js";
 
 export const signUp = async (req, res) => {
   // Handle signup logic here
@@ -26,42 +26,80 @@ export const signUp = async (req, res) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    
-
-
     const user = await User.findOne({ email });
 
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({ fullName, email, password: hashedPassword });
 
     if (newUser) {
       generateToken(newUser._id, res);
-     const savedUser= await newUser.save();
-      res.status(201).json({ message: "User registered successfully" , savedUser});
+      const savedUser = await newUser.save();
+      res
+        .status(201)
+        .json({ message: "User registered successfully", savedUser });
       // send a welcome email to the user
 
-
-      try{
-        await senderWelcomeEmail (savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
-
-      }
-      catch(err){
+      try {
+        await senderWelcomeEmail(
+          savedUser.email,
+          savedUser.fullName,
+          ENV.CLIENT_URL
+        );
+      } catch (err) {
         console.log("Error in sending welcome email:", err);
       }
-
-    } 
-    else {
-      
+    } else {
       res.status(400).json({ message: "Invalid user data" });
     }
-    
   } catch (error) {
     console.error("Error during user registration:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
+export const logIn = async (req, res) => {
+  const { email, password } = req.body;
+  
+  try {
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid Credentials" });
+    }
+
+    // Compare password
+    const isPassCorrect = await bcrypt.compare(password, user.password);
+    if (!isPassCorrect) {
+      return res.status(401).json({ message: "Invalid Credentials" });
+    }
+
+    // Generate token and send response
+    generateToken(user._id, res);
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        profilePic: user.profilePic,
+      }
+    });
+    
+  } catch (err) {
+    console.error("Error in login Controller:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+export const logOut = async (_, res) => {
+  res.cookie('token', "", { maxAge: 0 });
+  res.status(200).json({ message: "Logged Out successfully" });
 };
