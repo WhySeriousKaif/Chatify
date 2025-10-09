@@ -4,7 +4,6 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-
     "dev": "nodemon src/index.js",
     "start": "node src/index.js"
   },
@@ -19,6 +18,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "resend": "^6.0.2"
   }
 }
