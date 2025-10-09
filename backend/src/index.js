@@ -1,16 +1,16 @@
 import express from "express";
 import path from "path";
-import dotenv from "dotenv";
+
 import connectDB from "./config/db.js";
 import authRoute from "./routes/auth.route.js";
 import messageRoute from "./routes/message.route.js";
+import {ENV} from "./config/env.js";
 
-dotenv.config(); // Load env vars first
 
 const app = express();
 const __dirname = path.resolve();
 
-const PORT = process.env.PORT || 8080;
+const PORT = ENV.PORT || 3000;
 
 // ✅ Connect to MongoDB BEFORE starting server
 connectDB();
@@ -26,10 +26,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 app.use("/api/auth", authRoute);
+
 app.use("/api/messages", messageRoute);
 
 // make ready for deployment - serve frontend for all routes except API routes
-if (process.env.NODE_ENV === "production") {
+if (ENV.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
