@@ -1,26 +1,33 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import ChatPage from "./pages/ChatPage";
 import LogInPage from "./pages/LogInPage";
 import SignUpPage from "./pages/SignUpPage";
 import { useAuthStore } from "./store/useAuthStore";
+import { useEffect } from "react";
+import PageLoader from "./components/PageLoader";
+import { Toaster } from "react-hot-toast";
 
 function App() {
-  const { login, authUser, isLoggedIn } = useAuthStore();
-  console.log("authUser", authUser);
-  console.log("isLoggedIn", isLoggedIn);
-
+  const { checkAuth, authUser, isCheckingAuth } = useAuthStore();
+  useEffect(() => {
+    // Call once on mount to avoid dependency re-renders
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (isCheckingAuth) return <PageLoader />
   return (
     <div className="min-h-screen bg-slate-900 relative flex items-center justify-center p-4 overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:14px_24px]" />
       <div className="absolute top-0 -left-4 size-96 bg-violet-500 opacity-20 blur-[100px]" />
       <div className="absolute bottom-0 -right-4 size-96 bg-emerald-500 opacity-20 blur-[100px]" />
 
-      <button onClick={login} className="z-10">Login</button>
+
       <Routes>
-        <Route path="/" element={<ChatPage />} />
-        <Route path="/login" element={<LogInPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
+        <Route path="/login" element={authUser ? <Navigate to="/" /> : <LogInPage />} />
+        <Route path="/signup" element={authUser ? <Navigate to="/" /> : <SignUpPage />} />
       </Routes>
+      <Toaster />
     </div>
   );
 }
