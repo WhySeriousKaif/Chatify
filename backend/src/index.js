@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import authRoute from "./routes/auth.route.js";
 import messageRoute from "./routes/message.route.js";
 import {ENV} from "./config/env.js";
+import cookieParser from "cookie-parser";
 
 
 const app = express();
@@ -21,7 +22,7 @@ connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 // serve static files from frontend dist folder
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 

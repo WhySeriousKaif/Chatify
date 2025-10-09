@@ -3,6 +3,7 @@ import { senderWelcomeEmail } from "../emails/emailHandler.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { ENV } from "../config/env.js";
+import { cloudinary } from "../config/cloudinary.js";
 
 export const signUp = async (req, res) => {
   // Handle signup logic here
@@ -63,11 +64,13 @@ export const signUp = async (req, res) => {
 };
 export const logIn = async (req, res) => {
   const { email, password } = req.body;
-  
+
   try {
     // Check if email and password are provided
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     // Find user by email
@@ -91,15 +94,40 @@ export const logIn = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         profilePic: user.profilePic,
-      }
+      },
     });
-    
   } catch (err) {
     console.error("Error in login Controller:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 export const logOut = async (_, res) => {
-  res.cookie('token', "", { maxAge: 0 });
+  res.cookie("token", "", { maxAge: 0 });
   res.status(200).json({ message: "Logged Out successfully" });
+};
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    if (!profilePic) {
+      return res.status(400).json({ message: "Profile picture is required" });
+    }
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+
+    const uploadedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: uploadResponse.secure_url },
+      { new: true }
+    );
+    //  equivalent to const user = await User.findOne({ _id: userId });
+    // user.profilePic = uploadResponse.secure_url;
+    // await user.save();
+    // By default, findByIdAndUpdate() returns the old document (before the update).
+    // When you pass { new: true }, Mongoose tells MongoDB to return the updated document instead.
+    res.status(200).json(uploadedUser);
+  } catch (err) {
+    console.error("Error in updateProfile Controller:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
