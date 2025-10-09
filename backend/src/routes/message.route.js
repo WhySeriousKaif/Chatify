@@ -1,18 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
+import { getAllContacts, getChatPartners, getMessagesByUserId, sendMessage } from "../controller/message.controller";
+import { protectedRoute } from "../middlewares/auth.middleware";
+import { arcjetProtection } from "../middlewares/arcjet.middleware";
 
 dotenv.config();
 
 const messageRoute = express.Router();
 
-messageRoute.post("/send", (req, res) => {
-  // Handle sending message logic here
-  res.send("Send message endpoint");
-});
+messageRoute.use(arcjetProtection,protectedRoute)
 
-messageRoute.get("/inbox", (req, res) => {
-  // Handle fetching inbox messages logic here
-  res.send("Inbox messages endpoint");
-});
+
+messageRoute.get('/contacts',getAllContacts)
+messageRoute.get('/chats',getChatPartners)
+messageRoute.get('/:id',getMessagesByUserId)
+messageRoute.post("/send/:id",sendMessage)
 
 export default messageRoute;
+// 3:00:36
