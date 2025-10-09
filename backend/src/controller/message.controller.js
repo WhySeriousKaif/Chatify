@@ -1,6 +1,6 @@
-import { cloudinary } from "../config/cloudinary";
-import Message from "../models/message.model";
-import User from "../models/user.model";
+import { cloudinary } from "../config/cloudinary.js";
+import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 
 export const getAllContacts = async (req, res) => {
   try {
@@ -20,12 +20,13 @@ export const getMessagesByUserId = async (req, res) => {
     const myId = req.user._id;
     const { id: userToChatId } = req.params;
     // me and you messaging
-    const message = await Message.find({
+    const messages = await Message.find({
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
     });
+    return res.status(200).json(messages);
   } catch (err) {}
 };
 export const sendMessage = async (req, res) => {
@@ -34,6 +35,11 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
+    if (!text && !image) {
+      return res
+        .status(400)
+        .json({ message: "Please provide either text or image" });
+    }
     let imageUrl;
     if (image) {
       const uploadResponse = await cloudinary.uploader.upload(image);
@@ -59,8 +65,8 @@ export const getChatPartners = async (req, res) => {
     // find all the messages where the logged in user is receiver or sender
     const messages = await Message.find({
       $or: [
-        { senderId: myId, receiverId: userToChatId },
-        { senderId: userToChatId, receiverId: myId },
+        { senderId: loggedInUserId },
+        { receiverId: loggedInUserId },
       ],
     });
     const chatPartnerId = [
@@ -72,9 +78,12 @@ export const getChatPartners = async (req, res) => {
         )
       ),
     ];
-    const chatPartners=await User.find({_id: {$in:chatPartnerId}}).select('-password')
-    res.status(200).json(chatPartners)
+    const chatPartners = await User.find({ _id: { $in: chatPartnerId } }).select(
+      "-password"
+    );
+    return res.status(200).json(chatPartners);
   } catch (err) {
-    
+    console.error("error in getChatPartners controller ", err.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
