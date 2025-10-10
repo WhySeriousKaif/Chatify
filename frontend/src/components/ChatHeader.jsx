@@ -6,7 +6,12 @@ import { useAuthStore } from "../store/useAuthStore";
 function ChatHeader() {
   const { selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
-  const isOnline = onlineUsers.includes(selectedUser?._id);
+  const isOnline = onlineUsers?.some(user => user._id === selectedUser?._id) || false;
+  
+  // Debug logging
+  console.log("ChatHeader - selectedUser:", selectedUser?.fullName, selectedUser?._id);
+  console.log("ChatHeader - onlineUsers:", onlineUsers);
+  console.log("ChatHeader - isOnline:", isOnline);
 
   useEffect(() => {
     const handleEscKey = (event) => {
@@ -24,15 +29,17 @@ function ChatHeader() {
   return (
     <div
       className="flex justify-between items-center bg-slate-800/30 backdrop-blur-md border-b
-   border-slate-700/40 max-h-[84px] px-6 flex-1 shadow-lg"
+   border-slate-700/40 h-[84px] px-6 shadow-lg flex-shrink-0"
     >
       <div className="flex items-center space-x-3">
-        <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg">
-          <img 
-            src={selectedUser.profilePic || "/avatar.png"} 
-            alt={selectedUser.fullName}
-            className="w-full h-full object-cover"
-          />
+        <div className={`avatar ${onlineUsers?.includes(selectedUser?._id) ? "online" : "offline"}`}>
+          <div className="size-12 rounded-full overflow-hidden">
+            <img 
+              src={selectedUser.profilePic || "/avatar.png"} 
+              alt={selectedUser.fullName}
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
 
         <div>

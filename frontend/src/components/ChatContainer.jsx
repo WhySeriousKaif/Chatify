@@ -37,72 +37,34 @@ function ChatContainer() {
   return (
     <div className="flex flex-col h-full">
       <ChatHeader />
-      
-      {/* Messages area - scrollable */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+      <div className="flex-1 px-6 overflow-y-auto py-8">
         {messages.length > 0 && !isMessagesLoading ? (
-          <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((msg) => {
-              const isOwnMessage = msg.senderId === authUser?._id;
-              return (
+          <div className="max-w-3xl mx-auto space-y-6">
+            {messages.map((msg) => (
+              <div
+                key={msg._id}
+                className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+              >
                 <div
-                  key={msg._id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-4`}
+                  className={`chat-bubble relative ${
+                    msg.senderId === authUser._id
+                      ? "bg-cyan-600 text-white"
+                      : "bg-slate-800 text-slate-200"
+                  }`}
                 >
-                  <div className={`flex items-end gap-2 max-w-xs lg:max-w-md ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-                    {/* Avatar for other user's messages */}
-                    {!isOwnMessage && (
-                      <div className='w-8 h-8 rounded-full overflow-hidden flex-shrink-0'>
-                        <img 
-                          src={msg.sender?.profilePic || "/avatar.png"} 
-                          alt={msg.sender?.fullName || "User"}
-                          className='w-full h-full object-cover'
-                        />
-                      </div>
-                    )}
-
-                    {/* Message bubble */}
-                    <div
-                      className={`relative px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl ${
-                        isOwnMessage 
-                          ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-cyan-500/25' 
-                          : 'bg-slate-700/80 backdrop-blur-sm text-slate-200 border border-slate-600/30'
-                      }`}
-                    >
-                      {msg.image && (
-                        <div className="mb-2 group">
-                          <img 
-                            src={msg.image} 
-                            alt="Shared" 
-                            className="rounded-xl max-w-full h-auto max-h-64 object-contain cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg group-hover:shadow-xl" 
-                            onClick={() => window.open(msg.image, '_blank')}
-                            style={{ 
-                              imageOrientation: 'from-image',
-                              transform: 'none'
-                            }}
-                            onLoad={(e) => {
-                              // Reset any potential orientation issues
-                              e.target.style.transform = 'none';
-                              e.target.style.imageOrientation = 'from-image';
-                            }}
-                          />
-                        </div>
-                      )}
-                      {msg.text && <p className="break-words">{msg.text}</p>}
-                      <p className={`text-xs mt-1 ${
-                        isOwnMessage ? 'text-cyan-100' : 'text-slate-400'
-                      }`}>
-                        {new Date(msg.createdAt).toLocaleTimeString(undefined, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-
-                    </div>
-                  </div>
+                  {msg.image && (
+                    <img src={msg.image} alt="Shared" className="rounded-lg h-48 object-cover" />
+                  )}
+                  {msg.text && <p className="mt-2">{msg.text}</p>}
+                  <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
+                    {new Date(msg.createdAt).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
             {/* 👇 scroll target */}
             <div ref={messageEndRef} />
           </div>
@@ -113,12 +75,9 @@ function ChatContainer() {
         )}
       </div>
 
-      {/* Message input - fixed at bottom */}
-      <div className="flex-shrink-0">
-        <MessageInput />
-      </div>
+      <MessageInput />
     </div>
   );
 }
 
-export default ChatContainer
+export default ChatContainer;

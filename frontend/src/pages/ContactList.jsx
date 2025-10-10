@@ -6,7 +6,7 @@ import { MessageCircleIcon, UserPlusIcon } from "lucide-react";
 
 function ContactList() {
   const { getAllContacts, allContacts, setSelectedUser, isUsersLoading } = useChatStore();
-  const { authUser } = useAuthStore();
+  const { authUser,onlineUsers } = useAuthStore();
 
   useEffect(() => {
     getAllContacts();
@@ -42,12 +42,14 @@ function ContactList() {
           onClick={() => setSelectedUser(contact)}
         >
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg">
-              <img 
-                src={contact.profilePic || "/avatar.png"} 
-                alt={contact.fullName}
-                className="w-full h-full object-cover"
-              />
+            <div className={`avatar ${onlineUsers?.includes(contact._id) ? "online" : "offline"}`}>
+              <div className="size-12 rounded-full overflow-hidden">
+                <img 
+                  src={contact.profilePic || "/avatar.png"} 
+                  alt={contact.fullName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
             
             <div className="flex-1 min-w-0">
