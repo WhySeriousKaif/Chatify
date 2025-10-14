@@ -2,6 +2,27 @@
 
 @plugin "daisyui";
 
+:root {
+  --wa-bg: #0b141a;          /* app background */
+  --wa-panel: #111b21;       /* sidebar */
+  --wa-panel-light: #202c33; /* headers / bars */
+  --wa-item: #1f2c33;        /* list hover base */
+  --wa-item-hover: #2a3942;  /* list hover */
+  --wa-incoming: #202c33;    /* incoming bubble */
+  --wa-outgoing: #0891b2;    /* outgoing bubble (cyan-600-ish) */
+  --wa-text: #e9edef;        /* primary text */
+  --wa-text-dim: #8696a0;    /* secondary text */
+}
+
+/* WhatsApp-like wallpaper */
+.wa-wallpaper {
+  background-color: var(--wa-bg);
+  background-image:
+    radial-gradient(circle at 25px 25px, #1a242d 2px, rgba(0,0,0,0) 2px),
+    radial-gradient(circle at 75px 75px, #1a242d 2px, rgba(0,0,0,0) 2px);
+  background-size: 100px 100px;
+}
+
 @property --border-angle {
     inherits: false;
     initial-value: 0deg;
@@ -30,15 +51,36 @@
   }
   
   .auth-badge {
-    @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-300;
+    @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-cyan-500/15 text-cyan-300;
   }
   
   .auth-btn {
-    @apply w-full bg-cyan-500 text-white rounded-lg py-2.5 font-medium
-    hover:bg-cyan-600 focus:ring-2 focus:ring-cyan-500 cursor-pointer;
+    @apply w-full bg-cyan-600 text-white rounded-lg py-2.5 font-medium
+    hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-600 cursor-pointer;
   }
   
   .auth-link {
-    @apply px-4 py-2 inline-block bg-cyan-500/10 rounded-lg text-cyan-400
-    hover:text-cyan-500 text-sm transition-colors;
+    @apply px-4 py-2 inline-block bg-cyan-500/10 rounded-lg text-cyan-300
+    hover:text-cyan-400 text-sm transition-colors;
   }
+
+/* WhatsApp-like utility classes */
+.wa-app {
+  background-color: var(--wa-bg);
+}
+
+.wa-sidebar {
+  background-color: var(--wa-panel);
+}
+
+.wa-header {
+  background-color: var(--wa-panel-light);
+}
+
+.wa-input {
+  background-color: var(--wa-item-hover);
+}
+
+.wa-item-hover:hover {
+  background-color: var(--wa-item-hover);
+}

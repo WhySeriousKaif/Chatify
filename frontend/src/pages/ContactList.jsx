@@ -5,7 +5,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { MessageCircleIcon, UserPlusIcon } from "lucide-react";
 
 function ContactList() {
-  const { getAllContacts, allContacts, setSelectedUser, isUsersLoading } = useChatStore();
+  const { getAllContacts, allContacts, setSelectedUser, isUsersLoading, collapseSidebar } = useChatStore();
   const { authUser,onlineUsers } = useAuthStore();
 
   useEffect(() => {
@@ -39,7 +39,7 @@ function ContactList() {
         <div
           key={contact._id}
           className="group bg-slate-700/30 hover:bg-cyan-500/10 p-4 rounded-xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/20 border border-slate-600/30 hover:border-cyan-500/50 backdrop-blur-sm"
-          onClick={() => setSelectedUser(contact)}
+          onClick={() => { setSelectedUser(contact); collapseSidebar(); }}
         >
           <div className="flex items-center gap-3">
             <div className={`avatar ${onlineUsers?.includes(contact._id) ? "online" : "offline"}`}>

@@ -14,18 +14,18 @@ function LogInPage() {
   };
 
   return (
-    <div className="w-full flex items-center justify-center p-4 bg-slate-900">
+    <div className="w-full flex items-center justify-center p-4 wa-app wa-wallpaper">
       <div className="relative w-full max-w-6xl md:h-[800px] h-[650px]">
         <BorderAnimatedContainer>
           <div className="w-full flex flex-col md:flex-row">
             {/* FORM CLOUMN - LEFT SIDE */}
-            <div className="md:w-1/2 p-8 flex items-center justify-center md:border-r border-slate-600/30">
-              <div className="w-full max-w-md">
+            <div className="md:w-1/2 p-0 md:p-0 flex items-stretch justify-center md:border-r border-slate-800">
+              <div className="w-full max-w-md px-8 py-10 bg-[var(--wa-panel)]">
                 {/* HEADING TEXT */}
                 <div className="text-center mb-8">
                   <MessageCircleIcon className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-                  <h2 className="text-2xl font-bold text-slate-200 mb-2">Welcome Back</h2>
-                  <p className="text-slate-400">Login to access to your account</p>
+                  <h2 className="text-2xl font-bold text-[var(--wa-text)] mb-2">Welcome Back</h2>
+                  <p className="text-[var(--wa-text-dim)]">Login to access your account</p>
                 </div>
 
                 {/* FORM */}
@@ -40,7 +40,7 @@ function LogInPage() {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="input"
+                        className="input wa-input border border-slate-800 focus:ring-2 focus:ring-cyan-600/50"
                         placeholder="johndoe@gmail.com"
                       />
                     </div>
@@ -56,7 +56,7 @@ function LogInPage() {
                         type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="input"
+                        className="input wa-input border border-slate-800 focus:ring-2 focus:ring-cyan-600/50"
                         placeholder="Enter your password"
                       />
                     </div>
@@ -73,7 +73,7 @@ function LogInPage() {
                 </form>
 
                 <div className="mt-6 text-center">
-                  <Link to="/signup" className="auth-link">
+                  <Link to="/signup" className="px-4 py-2 inline-block rounded-full text-[var(--wa-text)] bg-[var(--wa-item)] hover:bg-[var(--wa-item-hover)] text-sm transition-colors">
                     Don't have an account? Sign Up
                   </Link>
                 </div>
@@ -81,8 +81,8 @@ function LogInPage() {
             </div>
 
             {/* FORM ILLUSTRATION - RIGHT SIDE */}
-            <div className="hidden md:w-1/2 md:flex items-center justify-center p-6 bg-gradient-to-bl from-slate-800/20 to-transparent">
-              <div>
+            <div className="hidden md:w-1/2 md:flex items-center justify-center p-0 bg-[var(--wa-panel)]">
+              <div className="p-6">
                 <img
                   src="/login.png"
                   alt="People using mobile devices"

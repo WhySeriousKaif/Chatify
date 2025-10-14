@@ -9,6 +9,8 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   activeTab: "chats",
   selectedUser: null,
+  sidebarCollapsed: false,
+  replyToMessage: null,
   isUsersLoading: false,
   isMessagesLoading: false,
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
@@ -20,6 +22,10 @@ export const useChatStore = create((set, get) => ({
 
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSelectedUser: (selectedUser) => set({ selectedUser }),
+  collapseSidebar: () => set({ sidebarCollapsed: true }),
+  expandSidebar: () => set({ sidebarCollapsed: false }),
+  toggleSidebar: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
+  setReplyToMessage: (message) => set({ replyToMessage: message }),
 
   getAllContacts: async () => {
     set({ isUsersLoading: true });
@@ -68,11 +74,12 @@ export const useChatStore = create((set, get) => ({
       receiverId: selectedUser._id,
       text: messageData.text,
       image: messageData.image,
+      replyTo: get().replyToMessage ? { _id: get().replyToMessage._id, text: get().replyToMessage.text } : undefined,
       createdAt: new Date().toISOString(),
       isOptimistic: true, // flag to identify optimistic messages (optional)
     };
     // immidetaly update the ui by adding the message
-    set({ messages: [...messages, optimisticMessage] });
+    set({ messages: [...messages, optimisticMessage], replyToMessage: null });
 
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);

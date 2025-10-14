@@ -1,9 +1,11 @@
 import React from 'react'
 import { MessageCircleIcon, UsersIcon, SparklesIcon } from 'lucide-react';
 import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router';
 
 const NoConversationPlaceholder = () => {
   const { setActiveTab } = useChatStore();
+  const navigate = useNavigate();
 
   const handleFindContacts = () => {
     setActiveTab('contacts');
@@ -51,13 +53,15 @@ const NoConversationPlaceholder = () => {
         <div className='flex flex-col sm:flex-row gap-4 w-full'>
           <button 
             onClick={handleFindContacts}
-            className='flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/25'
+            className='flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-xl font-medium hover:bg-cyan-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20'
           >
             <UsersIcon className='w-5 h-5' />
             Find Contacts
           </button>
           
-          <button className='flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-800/50 text-slate-300 rounded-xl font-medium border border-slate-700 hover:bg-slate-700/50 hover:text-slate-200 transition-all duration-300'>
+          <button 
+            onClick={(e) => { e.preventDefault(); setActiveTab('chats'); navigate('/chat'); }}
+            className='flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[var(--wa-item)] text-[var(--wa-text)] rounded-xl font-medium border border-slate-800 hover:bg-[var(--wa-item-hover)] transition-all duration-300'>
             <MessageCircleIcon className='w-5 h-5' />
             Start Chat
           </button>

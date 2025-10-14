@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import toast from "react-hot-toast";
@@ -11,7 +11,9 @@ function MessageInput() {
 
   const fileInputRef = useRef(null);
 
-  const { sendMessage, isSoundEnabled } = useChatStore();
+  const { sendMessage, isSoundEnabled, replyToMessage, setReplyToMessage } = useChatStore();
+
+  const inputRef = useRef(null);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -25,6 +27,8 @@ function MessageInput() {
     setText("");
     setImagePreview("");
     if (fileInputRef.current) fileInputRef.current.value = "";
+    // focus back to input for quick sending
+    inputRef.current?.focus();
   };
 
   const handleImageChange = (e) => {
@@ -45,7 +49,7 @@ function MessageInput() {
   };
 
   return (
-    <div className="bg-slate-800/30 backdrop-blur-md border-t border-slate-700/40 shadow-lg flex-shrink-0">
+    <div className="wa-header border-t border-slate-800 flex-shrink-0">
       {imagePreview && (
         <div className="px-4 pt-4">
           <div className="max-w-3xl mx-auto flex items-center">
@@ -75,8 +79,19 @@ function MessageInput() {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="p-4">
-        <div className="max-w-3xl mx-auto flex space-x-3">
+      {replyToMessage && (
+        <div className="max-w-3xl mx-auto px-3 pt-2">
+          <div className="flex items-start gap-2 bg-[var(--wa-item)] rounded-md px-3 py-2 border-l-2 border-cyan-400/70">
+            <div className="text-[12px] text-[var(--wa-text-dim)] flex-1 truncate">{replyToMessage.text || "Replied message"}</div>
+            <button onClick={() => setReplyToMessage(null)} type="button" className="text-[var(--wa-text-dim)]">
+              <XIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSendMessage} className="p-3">
+        <div className="max-w-3xl mx-auto flex space-x-2">
           <input
             type="text"
             value={text}
@@ -84,8 +99,9 @@ function MessageInput() {
               setText(e.target.value);
               isSoundEnabled && playRandomKeyStrokeSound();
             }}
-            className="flex-1 bg-slate-700/60 border border-slate-600/50 rounded-xl py-3 px-4 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-200 shadow-lg backdrop-blur-sm"
-            placeholder="Type your message..."
+            ref={inputRef}
+            className="flex-1 wa-input border border-slate-800 rounded-full py-3 px-4 text-[var(--wa-text)] placeholder-[var(--wa-text-dim)] focus:outline-none focus:ring-2 focus:ring-cyan-600/50"
+            placeholder="Type a message"
           />
 
           <input
@@ -99,11 +115,7 @@ function MessageInput() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-              imagePreview 
-                ? "bg-cyan-500/20 text-cyan-400 shadow-lg shadow-cyan-500/25" 
-                : "bg-slate-700/60 text-slate-400 hover:text-slate-200 hover:bg-slate-600/60 shadow-lg"
-            }`}
+            className={`p-3 rounded-full transition-colors ${imagePreview ? "bg-cyan-900/40 text-cyan-300" : "text-[var(--wa-text-dim)] hover:bg-[var(--wa-item)]"}`}
           >
             <ImageIcon className="w-5 h-5" />
           </button>
@@ -111,7 +123,7 @@ function MessageInput() {
           <button
             type="submit"
             disabled={!text.trim() && !imagePreview}
-            className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-cyan-500 disabled:hover:to-blue-500 shadow-lg hover:shadow-xl hover:scale-105 disabled:hover:scale-100"
+            className="p-3 bg-cyan-600 text-white rounded-full font-medium hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <SendIcon className="w-5 h-5" />
           </button>

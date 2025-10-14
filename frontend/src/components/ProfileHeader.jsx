@@ -8,6 +8,10 @@ const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
 
 function ProfileHeader() {
   const { logout, authUser, updateProfile } = useAuthStore();
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = '/';
+  };
   const { isSoundEnabled, toggleSound } = useChatStore();
   const [selectedImg, setSelectedImg] = useState(null);
 
@@ -76,7 +80,7 @@ function ProfileHeader() {
   };
 
   return (
-    <div className="p-6 border-b border-slate-700/30">
+    <div className="px-3 py-2 wa-header border-b border-slate-800">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* AVATAR */}
@@ -106,27 +110,27 @@ function ProfileHeader() {
 
           {/* USERNAME & ONLINE TEXT */}
           <div>
-            <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
+            <h3 className="text-[15px] text-[var(--wa-text)] font-medium max-w-[180px] truncate">
               {authUser.fullName}
             </h3>
 
-            <p className="text-slate-400 text-xs">Online</p>
+            <p className="text-[11px] text-[var(--wa-text-dim)]">Online</p>
           </div>
         </div>
 
         {/* BUTTONS */}
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center">
           {/* LOGOUT BTN */}
           <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={logout}
+            className="text-[var(--wa-text-dim)] hover:text-[var(--wa-text)] transition-colors"
+            onClick={handleLogout}
           >
             <LogOutIcon className="size-5" />
           </button>
 
           {/* SOUND TOGGLE BTN */}
           <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-[var(--wa-text-dim)] hover:text-[var(--wa-text)] transition-colors"
             onClick={() => {
               // play click sound before toggling
               mouseClickSound.currentTime = 0; // reset to start
