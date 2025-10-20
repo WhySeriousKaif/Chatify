@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(),tailwindcss(),],
+  plugins: [react(), tailwindcss()],
   server: {
     proxy: {
       '/api': {
@@ -14,4 +14,23 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(assetInfo.name)) {
+            return `images/[name]-[hash][extname]`;
+          }
+          if (/\.(mp3|wav|ogg|m4a)$/i.test(assetInfo.name)) {
+            return `sounds/[name]-[hash][extname]`;
+          }
+          return `assets/[name]-[hash][extname]`;
+        },
+      },
+    },
+  },
+  base: './',
 })

@@ -2,17 +2,25 @@ import { Link } from "react-router";
 
 function LandingPage() {
   return (
-    <div className="min-h-screen wa-app wa-wallpaper relative overflow-y-auto">
+    <div className="min-h-screen wa-app wa-wallpaper relative overflow-hidden">
       {/* decorative blobs */}
       <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-emerald-500/10 rounded-full blur-3xl" />
       <div className="absolute -bottom-24 -right-24 w-[420px] h-[420px] bg-cyan-500/10 rounded-full blur-3xl" />
 
       <header className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Chatify Logo" className="w-9 h-9 rounded-xl" />
+          <img 
+            src="/logo.png" 
+            alt="Chatify Logo" 
+            className="w-9 h-9 rounded-xl"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="w-9 h-9 rounded-xl bg-cyan-600 flex items-center justify-center text-white font-bold" style={{display: 'none'}}>C</div>
           <span className="text-[var(--wa-text)] font-semibold text-lg">Chatify</span>
         </div>
-      
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
@@ -35,7 +43,7 @@ function LandingPage() {
           <div className="relative max-w-6xl mx-auto">
             {/* Glow effect behind the image */}
             <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 rounded-3xl blur-2xl"></div>
-            
+
             <div className="relative rounded-3xl border-2 border-slate-600 overflow-hidden shadow-2xl bg-gradient-to-br from-slate-800 to-slate-900">
               <div className="wa-header px-8 py-5 border-b border-slate-600 text-[var(--wa-text-dim)] text-center font-semibold text-lg flex items-center justify-center gap-2">
                 <span className="text-cyan-400">✨</span>
@@ -43,11 +51,22 @@ function LandingPage() {
                 <span className="text-emerald-400">✨</span>
               </div>
               <div className="wa-wallpaper p-4 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
-                <img 
-                  src="/MessageView.png" 
-                  alt="Chatify Message View Preview" 
+                <img
+                  src="/MessageView.png"
+                  alt="Chatify Message View Preview"
                   className="w-full h-auto rounded-2xl shadow-2xl border border-slate-600/50 min-h-[600px] object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
                 />
+                <div className="w-full min-h-[600px] rounded-2xl shadow-2xl border border-slate-600/50 bg-slate-800 flex items-center justify-center" style={{display: 'none'}}>
+                  <div className="text-center text-slate-400">
+                    <div className="text-6xl mb-4">📱</div>
+                    <div className="text-xl font-semibold">Chat Preview</div>
+                    <div className="text-sm mt-2">Image preview not available</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
