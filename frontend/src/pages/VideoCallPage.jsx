@@ -48,11 +48,10 @@ export default function VideoCallPage() {
           audio: true
         });
         
-        console.log('Local media stream obtained:', stream);
         setLocalStream(stream);
         
             // Initialize socket connection
-            const socketConnection = io('http://localhost:3000', {
+            const socketConnection = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, {
               auth: {
                 token: document.cookie.split('token=')[1]?.split(';')[0]
               },
@@ -69,11 +68,8 @@ export default function VideoCallPage() {
         
             // Socket event handlers
             socketConnection.on('connect', () => {
-              console.log('Socket connected for video call');
-              
               // If we have a target user, initiate the call
               if (targetUserId) {
-                console.log(`Initiating call to ${targetUserName} (${targetUserId})`);
                 socketConnection.emit('call-user', {
                   targetUserId,
                   callerId: authUser._id,
@@ -93,7 +89,6 @@ export default function VideoCallPage() {
             });
 
             socketConnection.on('disconnect', (reason) => {
-              console.log('Socket disconnected:', reason);
               if (reason === 'io server disconnect') {
                 // Server disconnected the client, try to reconnect
                 socketConnection.connect();
@@ -101,49 +96,41 @@ export default function VideoCallPage() {
             });
         
         socketConnection.on('incoming-call', (data) => {
-          console.log('Incoming call:', data);
           setCurrentCallId(data.callId);
           setCallStatus('incoming');
         });
         
         socketConnection.on('call-accepted', (data) => {
-          console.log('Call accepted:', data);
           setCallStatus('connecting');
           // Start WebRTC negotiation immediately
           startWebRTCNegotiation(socketConnection, stream, data.callId, data.fromUserId);
         });
         
         socketConnection.on('call-rejected', (data) => {
-          console.log('Call rejected:', data);
           setCallStatus('rejected');
           setTimeout(() => navigate('/chat'), 3000);
         });
         
         socketConnection.on('call-ended', (data) => {
-          console.log('Call ended:', data);
           setCallStatus('ended');
           setTimeout(() => navigate('/chat'), 2000);
         });
         
         socketConnection.on('start-webrtc', (data) => {
-          console.log('Starting WebRTC negotiation:', data);
           // Always start negotiation - the function will handle peer connection creation
           startWebRTCNegotiation(socketConnection, stream, data.callId, data.fromUserId);
         });
         
         // WebRTC signaling events
         socketConnection.on('webrtc-offer', async (data) => {
-          console.log('Received WebRTC offer:', data);
           await handleWebRTCOffer(data);
         });
         
         socketConnection.on('webrtc-answer', async (data) => {
-          console.log('Received WebRTC answer:', data);
           await handleWebRTCAnswer(data);
         });
         
         socketConnection.on('webrtc-ice-candidate', async (data) => {
-          console.log('Received ICE candidate:', data);
           await handleICECandidate(data);
         });
         
@@ -175,10 +162,7 @@ export default function VideoCallPage() {
   // Start WebRTC negotiation
   const startWebRTCNegotiation = async (socketConnection, stream, callId, remotePeerId) => {
     try {
-      console.log('Starting WebRTC negotiation for call:', callId, 'with remote peer:', remotePeerId);
-      
           // Always create a new peer connection for each call
-          console.log('Creating new peer connection');
           const pc = new RTCPeerConnection({
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
@@ -196,33 +180,25 @@ export default function VideoCallPage() {
       // Add local stream
       stream.getTracks().forEach(track => {
         pc.addTrack(track, stream);
-        console.log('Added track to peer connection:', track.kind);
       });
       
           // Handle remote stream
           pc.ontrack = (event) => {
-            console.log('Received remote stream:', event.streams[0]);
-            console.log('Remote stream tracks:', event.streams[0].getTracks());
-            console.log('Video tracks:', event.streams[0].getVideoTracks());
-            console.log('Audio tracks:', event.streams[0].getAudioTracks());
-            
             if (event.streams && event.streams[0]) {
               setRemoteStream(event.streams[0]);
               setIsConnected(true);
               setCallStatus('connected');
-              console.log('Remote stream set successfully');
             }
           };
 
           // Handle data channel for debugging
           pc.ondatachannel = (event) => {
-            console.log('Data channel received:', event.channel);
+            // Data channel received
           };
       
           // Handle ICE candidates
           pc.onicecandidate = (event) => {
             if (event.candidate) {
-              console.log('Sending ICE candidate:', event.candidate);
               socketConnection.emit('webrtc-ice-candidate', {
                 callId,
                 candidate: event.candidate,
@@ -234,11 +210,9 @@ export default function VideoCallPage() {
 
           // Process any pending ICE candidates
           if (window.pendingICECandidates && window.pendingICECandidates.length > 0) {
-            console.log('Processing pending ICE candidates:', window.pendingICECandidates.length);
             window.pendingICECandidates.forEach(async (candidate) => {
               try {
                 await pc.addIceCandidate(candidate);
-                console.log('Added pending ICE candidate');
               } catch (error) {
                 console.error('Error adding pending ICE candidate:', error);
               }
@@ -248,57 +222,43 @@ export default function VideoCallPage() {
       
           // Handle connection state changes
           pc.onconnectionstatechange = () => {
-            console.log('WebRTC connection state:', pc.connectionState);
-            console.log('ICE connection state:', pc.iceConnectionState);
-            console.log('ICE gathering state:', pc.iceGatheringState);
-            console.log('Signaling state:', pc.signalingState);
             
             if (pc.connectionState === 'connected') {
-              console.log('WebRTC connection established successfully!');
               setIsConnected(true);
               setCallStatus('connected');
             } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-              console.log('WebRTC connection failed or disconnected');
               setIsConnected(false);
               setCallStatus('disconnected');
               
               // Try to reconnect after a short delay
               setTimeout(() => {
                 if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-                  console.log('Attempting to reconnect...');
                   pc.restartIce().catch(error => {
                     console.error('Failed to restart ICE:', error);
                   });
                 }
               }, 2000);
             } else if (pc.connectionState === 'connecting') {
-              console.log('WebRTC is connecting...');
               setCallStatus('connecting');
             }
           };
 
           // Handle ICE connection state changes
           pc.oniceconnectionstatechange = () => {
-            console.log('ICE connection state changed:', pc.iceConnectionState);
             if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
-              console.log('ICE connection established!');
               
               // Check if we have remote streams
               const remoteStreams = pc.getRemoteStreams();
-              console.log('Remote streams available:', remoteStreams.length);
               
               if (remoteStreams.length > 0 && !remoteStream) {
-                console.log('Setting remote stream from getRemoteStreams');
                 setRemoteStream(remoteStreams[0]);
                 setIsConnected(true);
                 setCallStatus('connected');
               }
             } else if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
-              console.log('ICE connection failed, attempting to restart ICE...');
               
               // Try to restart ICE
               pc.restartIce().then(() => {
-                console.log('ICE restart initiated');
               }).catch(error => {
                 console.error('Failed to restart ICE:', error);
               });
@@ -307,7 +267,6 @@ export default function VideoCallPage() {
       
       // Only create offer if we're the caller (have targetUserId)
       if (targetUserId) {
-        console.log('Creating offer as caller');
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         
@@ -318,7 +277,6 @@ export default function VideoCallPage() {
           toUserId: remotePeerId || targetUserId
         });
       } else {
-        console.log('Waiting for offer as receiver');
         setCallStatus('connecting');
       }
       
@@ -331,10 +289,7 @@ export default function VideoCallPage() {
   // Handle WebRTC offer
   const handleWebRTCOffer = async (data) => {
     try {
-      console.log('Handling WebRTC offer from:', data.fromUserId);
-      
           // Always create a new peer connection for incoming offer
-          console.log('Creating peer connection for incoming offer');
           const pc = new RTCPeerConnection({
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
@@ -350,34 +305,26 @@ export default function VideoCallPage() {
       if (localStream) {
         localStream.getTracks().forEach(track => {
           pc.addTrack(track, localStream);
-          console.log('Added track to peer connection:', track.kind);
         });
       }
       
           // Handle remote stream
           pc.ontrack = (event) => {
-            console.log('Received remote stream:', event.streams[0]);
-            console.log('Remote stream tracks:', event.streams[0].getTracks());
-            console.log('Video tracks:', event.streams[0].getVideoTracks());
-            console.log('Audio tracks:', event.streams[0].getAudioTracks());
-            
             if (event.streams && event.streams[0]) {
               setRemoteStream(event.streams[0]);
               setIsConnected(true);
               setCallStatus('connected');
-              console.log('Remote stream set successfully');
             }
           };
 
           // Handle data channel for debugging
           pc.ondatachannel = (event) => {
-            console.log('Data channel received:', event.channel);
+            // Data channel received
           };
       
       // Handle ICE candidates
       pc.onicecandidate = (event) => {
         if (event.candidate) {
-          console.log('Sending ICE candidate:', event.candidate);
           socket.emit('webrtc-ice-candidate', {
             callId: data.callId,
             candidate: event.candidate,
@@ -389,69 +336,52 @@ export default function VideoCallPage() {
       
           // Handle connection state changes
           pc.onconnectionstatechange = () => {
-            console.log('WebRTC connection state:', pc.connectionState);
-            console.log('ICE connection state:', pc.iceConnectionState);
-            console.log('ICE gathering state:', pc.iceGatheringState);
-            console.log('Signaling state:', pc.signalingState);
             
             if (pc.connectionState === 'connected') {
-              console.log('WebRTC connection established successfully!');
               setIsConnected(true);
               setCallStatus('connected');
             } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-              console.log('WebRTC connection failed or disconnected');
               setIsConnected(false);
               setCallStatus('disconnected');
               
               // Try to reconnect after a short delay
               setTimeout(() => {
                 if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-                  console.log('Attempting to reconnect...');
                   pc.restartIce().catch(error => {
                     console.error('Failed to restart ICE:', error);
                   });
                 }
               }, 2000);
             } else if (pc.connectionState === 'connecting') {
-              console.log('WebRTC is connecting...');
               setCallStatus('connecting');
             }
           };
 
           // Handle ICE connection state changes
           pc.oniceconnectionstatechange = () => {
-            console.log('ICE connection state changed:', pc.iceConnectionState);
             if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
-              console.log('ICE connection established!');
               
               // Check if we have remote streams
               const remoteStreams = pc.getRemoteStreams();
-              console.log('Remote streams available:', remoteStreams.length);
               
               if (remoteStreams.length > 0 && !remoteStream) {
-                console.log('Setting remote stream from getRemoteStreams');
                 setRemoteStream(remoteStreams[0]);
                 setIsConnected(true);
                 setCallStatus('connected');
               }
             } else if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
-              console.log('ICE connection failed, attempting to restart ICE...');
               
               // Try to restart ICE
               pc.restartIce().then(() => {
-                console.log('ICE restart initiated');
               }).catch(error => {
                 console.error('Failed to restart ICE:', error);
               });
             }
           };
       
-      console.log('Setting remote description and creating answer');
       await pc.setRemoteDescription(data.offer);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      
-      console.log('Sending WebRTC answer to:', data.fromUserId);
       socket.emit('webrtc-answer', {
         callId: data.callId,
         answer,
@@ -468,14 +398,11 @@ export default function VideoCallPage() {
     const pc = peerConnectionRef.current;
     
     if (!pc) {
-      console.log('No peer connection available for answer');
       return;
     }
     
     try {
-      console.log('Handling WebRTC answer from:', data.fromUserId);
       await pc.setRemoteDescription(data.answer);
-      console.log('Remote description set successfully');
     } catch (error) {
       console.error('Error handling WebRTC answer:', error);
     }
@@ -487,7 +414,6 @@ export default function VideoCallPage() {
     const pc = peerConnectionRef.current;
     
     if (!pc) {
-      console.log('No peer connection available for ICE candidate, storing for later');
       // Store the candidate to add later when peer connection is created
       if (!window.pendingICECandidates) {
         window.pendingICECandidates = [];
@@ -497,9 +423,7 @@ export default function VideoCallPage() {
     }
     
     try {
-      console.log('Adding ICE candidate from:', data.fromUserId);
       await pc.addIceCandidate(data.candidate);
-      console.log('ICE candidate added successfully');
     } catch (error) {
       console.error('Error handling ICE candidate:', error);
     }
@@ -514,7 +438,6 @@ export default function VideoCallPage() {
 
   useEffect(() => {
     if (remoteStream && remoteVideoRef.current) {
-      console.log('Setting remote video element srcObject:', remoteStream);
       remoteVideoRef.current.srcObject = remoteStream;
       
       // Force play the video
@@ -528,7 +451,6 @@ export default function VideoCallPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (callStatus === 'connecting' || callStatus === 'ringing') {
-        console.log('Forcing connected status after timeout');
         setCallStatus('connected');
         setIsConnected(true);
       }
@@ -537,30 +459,14 @@ export default function VideoCallPage() {
     return () => clearTimeout(timer);
   }, [callStatus]);
 
-  // Debug: Log when remote stream changes
-  useEffect(() => {
-    if (remoteStream) {
-      console.log('Remote stream updated:', remoteStream);
-      console.log('Remote stream tracks:', remoteStream.getTracks());
-    }
-  }, [remoteStream]);
 
-  // Debug: Log when peer connection changes
+  // Check for remote streams periodically
   useEffect(() => {
     if (peerConnection) {
-      console.log('Peer connection updated:', peerConnection);
-      console.log('Connection state:', peerConnection.connectionState);
-      console.log('ICE connection state:', peerConnection.iceConnectionState);
-      
-      // Check for remote streams periodically
       const checkRemoteStreams = () => {
         const remoteStreams = peerConnection.getRemoteStreams();
-        console.log('Checking remote streams:', remoteStreams.length);
-        console.log('Current connection state:', peerConnection.connectionState);
-        console.log('Current ICE connection state:', peerConnection.iceConnectionState);
         
         if (remoteStreams.length > 0 && !remoteStream) {
-          console.log('Found remote stream via periodic check');
           setRemoteStream(remoteStreams[0]);
           setIsConnected(true);
           setCallStatus('connected');
@@ -568,7 +474,6 @@ export default function VideoCallPage() {
         
         // If we have remote streams but connection is failed, try to force connection
         if (remoteStreams.length > 0 && peerConnection.connectionState === 'failed') {
-          console.log('Connection failed but remote streams exist, forcing connected state');
           setCallStatus('connected');
           setIsConnected(true);
         }
@@ -585,12 +490,9 @@ export default function VideoCallPage() {
   // Test: Create a mock remote stream for testing if WebRTC fails
   useEffect(() => {
     if (callStatus === 'connected' && !remoteStream) {
-      console.log('No remote stream received, creating test stream...');
-      
       // Wait a bit more for WebRTC to establish
       const timer = setTimeout(async () => {
         if (!remoteStream) {
-          console.log('Creating mock remote stream for testing');
           try {
             // Create a simple test video stream
             const testStream = new MediaStream();
@@ -610,8 +512,6 @@ export default function VideoCallPage() {
   // Fallback: Create a simple mock remote stream for demonstration
   useEffect(() => {
     if (callStatus === 'connected' && !remoteStream && localStream) {
-      console.log('Creating mock remote stream for demonstration...');
-      
       const timer = setTimeout(async () => {
         try {
           // Create a mock remote stream that shows a test pattern
@@ -659,7 +559,6 @@ export default function VideoCallPage() {
           animate();
           
           setRemoteStream(stream);
-          console.log('Mock remote stream created successfully');
           
         } catch (error) {
           console.error('Error creating mock remote stream:', error);
@@ -675,11 +574,8 @@ export default function VideoCallPage() {
     if (peerConnection && callStatus === 'connected' && !remoteStream) {
       const remoteStreams = peerConnection.getRemoteStreams();
       if (remoteStreams.length > 0) {
-        console.log('Found remote streams but not displaying, creating fallback...');
-        
         const timer = setTimeout(() => {
           if (!remoteStream) {
-            console.log('Creating fallback mock stream...');
             // Create a simple mock stream
             const canvas = document.createElement('canvas');
             canvas.width = 640;
@@ -757,11 +653,9 @@ export default function VideoCallPage() {
       const audioTracks = localStream.getAudioTracks();
       audioTracks.forEach(track => {
         track.enabled = !isMuted; // Fix: enable when not muted, disable when muted
-        console.log(`Audio track ${track.id} enabled: ${track.enabled}`);
       });
     }
     setIsMuted(!isMuted);
-    console.log(`Microphone ${!isMuted ? 'muted' : 'unmuted'}`);
   };
 
   const toggleVideo = () => {
@@ -769,11 +663,9 @@ export default function VideoCallPage() {
       const videoTracks = localStream.getVideoTracks();
       videoTracks.forEach(track => {
         track.enabled = !isVideoOff; // Fix: enable when not off, disable when off
-        console.log(`Video track ${track.id} enabled: ${track.enabled}`);
       });
     }
     setIsVideoOff(!isVideoOff);
-    console.log(`Video ${!isVideoOff ? 'turned off' : 'turned on'}`);
   };
 
   if (isLoading) {
@@ -935,9 +827,6 @@ export default function VideoCallPage() {
                 playsInline
                 muted={false}
                 className="w-full h-full object-cover"
-                onLoadedMetadata={() => console.log('Remote video loaded metadata')}
-                onCanPlay={() => console.log('Remote video can play')}
-                onPlay={() => console.log('Remote video started playing')}
                 onError={(e) => console.error('Remote video error:', e)}
               />
               <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">

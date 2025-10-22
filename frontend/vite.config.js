@@ -8,13 +8,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: process.env.VITE_API_URL || 'http://localhost:3000',
         changeOrigin: true,
         secure: false,
       },
     },
     headers: {
-      'Content-Security-Policy': "connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:* https://*.stream-io-video.com https://*.getstream.io https://hint.stream-io-video.com wss://video.stream-io-api.com"
+      'Content-Security-Policy': "connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:* https://*.stream-io-video.com https://*.getstream.io https://hint.stream-io-video.com wss://video.stream-io-api.com https://chatify-qnms0.sevalla.app"
     }
   },
   build: {
