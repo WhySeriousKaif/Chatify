@@ -1,6 +1,15 @@
 import { Server } from "socket.io";
 import { ENV } from "./env.js";
 import { socketAuthMiddleware } from "../middlewares/socket.middleware.js";
+import { 
+  handleIncomingCall, 
+  handleCallAccept, 
+  handleCallReject, 
+  handleCallEnd,
+  handleWebRTCOffer,
+  handleWebRTCAnswer,
+  handleICECandidate
+} from "../controller/webrtc.controller.js";
 
 let io;
 
@@ -35,6 +44,17 @@ export const initializeSocket = (server) => {
 
     // Emit online users when someone connects
     getOnlineUsers();
+
+    // WebRTC signaling events
+    socket.on("call-user", (data) => handleIncomingCall(socket, data));
+    socket.on("accept-call", (data) => handleCallAccept(socket, data));
+    socket.on("reject-call", (data) => handleCallReject(socket, data));
+    socket.on("end-call", (data) => handleCallEnd(socket, data));
+    
+    // WebRTC peer connection events
+    socket.on("webrtc-offer", (data) => handleWebRTCOffer(socket, data));
+    socket.on("webrtc-answer", (data) => handleWebRTCAnswer(socket, data));
+    socket.on("webrtc-ice-candidate", (data) => handleICECandidate(socket, data));
 
     // Handle disconnect
     socket.on("disconnect", () => {

@@ -6,6 +6,7 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 
 ### Core Features
 - **Real-time Messaging**: Instant message delivery using Socket.IO
+- **Video Calling**: WebRTC-based video calls with real-time audio/video
 - **User Authentication**: Secure JWT-based authentication with cookies
 - **Profile Management**: User profiles with image upload via Cloudinary
 - **Contact Management**: Add and manage chat contacts
@@ -13,12 +14,14 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Online Status**: Real-time online/offline user status
 - **Image Sharing**: Send and receive images in chat
 - **Message Status**: Read receipts and delivery confirmation
+- **Call Controls**: Mute, video toggle, and call management
 - **Responsive Design**: Mobile-first responsive UI
 - **Sound Notifications**: Audio feedback for new messages
 - **Modern UI**: WhatsApp-inspired design with smooth animations
 
 ### Technical Features
-- **Real-time Communication**: Socket.IO for instant messaging
+- **Real-time Communication**: Socket.IO for instant messaging and video calling
+- **WebRTC Integration**: Peer-to-peer video/audio communication
 - **Secure Authentication**: JWT tokens with HTTP-only cookies
 - **File Upload**: Cloudinary integration for image sharing
 - **State Management**: Zustand for efficient state management
@@ -26,6 +29,7 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Email Integration**: Resend for welcome emails
 - **Security**: Arcjet for rate limiting and security
 - **Optimistic Updates**: Instant UI updates for better UX
+- **Cross-platform**: Works on desktop, mobile, and tablet devices
 
 ## 🛠️ Tech Stack
 
@@ -34,7 +38,7 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Express.js** - Web framework
 - **MongoDB** - Database
 - **Mongoose** - ODM for MongoDB
-- **Socket.IO** - Real-time communication
+- **Socket.IO** - Real-time communication and video calling signaling
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
 - **Cloudinary** - Image storage
@@ -46,7 +50,8 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Vite** - Build tool
 - **Tailwind CSS** - Styling
 - **Zustand** - State management
-- **Socket.IO Client** - Real-time communication
+- **Socket.IO Client** - Real-time communication and video calling
+- **WebRTC APIs** - Peer-to-peer video/audio communication
 - **Axios** - HTTP client
 - **React Router** - Navigation
 - **React Hot Toast** - Notifications
@@ -67,7 +72,9 @@ Chatify/
 │   │   │   └── utils.js    # Utility functions
 │   │   ├── controllers/    # Route controllers
 │   │   │   ├── auth.controller.js
-│   │   │   └── message.controller.js
+│   │   │   ├── message.controller.js
+│   │   │   ├── video.controller.js
+│   │   │   └── webrtc.controller.js
 │   │   ├── middlewares/    # Custom middlewares
 │   │   │   ├── auth.middleware.js
 │   │   │   └── socket.middleware.js
@@ -76,14 +83,21 @@ Chatify/
 │   │   │   └── message.model.js
 │   │   ├── routes/         # API routes
 │   │   │   ├── auth.route.js
-│   │   │   └── message.route.js
+│   │   │   ├── message.route.js
+│   │   │   └── video.route.js
 │   │   ├── emails/         # Email templates
 │   │   └── index.js        # Server entry point
 │   └── package.json
 ├── frontend/               # React frontend
 │   ├── src/
 │   │   ├── components/     # React components
+│   │   │   ├── ChatHeader.jsx
+│   │   │   ├── ProfileHeader.jsx
+│   │   │   └── CallInvitation.jsx
 │   │   ├── pages/          # Page components
+│   │   │   ├── VideoCallPage.jsx
+│   │   │   ├── ChatPage.jsx
+│   │   │   └── LandingPage.jsx
 │   │   ├── store/          # Zustand stores
 │   │   ├── lib/            # Utility libraries
 │   │   ├── hooks/          # Custom hooks
@@ -199,9 +213,18 @@ npm run dev
 4. **Share Images**: Upload and share images in chat
 5. **Real-time Updates**: See messages instantly as they arrive
 
+### Video Calling
+1. **Initiate Call**: Click the video button in any chat
+2. **Accept/Reject**: Answer incoming video calls
+3. **Call Controls**: Mute, toggle video, or leave call
+4. **Real-time Video**: See and hear each other in real-time
+5. **Call Management**: View call status and participants
+
 ### Features
 - **Online Status**: See which users are currently online
 - **Message History**: View all previous conversations
+- **Video Calling**: High-quality video calls with WebRTC
+- **Call Controls**: Mute, video toggle, and call management
 - **Sound Notifications**: Hear audio alerts for new messages
 - **Responsive Design**: Use on desktop, tablet, or mobile
 
@@ -229,9 +252,38 @@ npm run dev
 - `GET /api/messages/:userId` - Get messages with specific user
 - `POST /api/messages/send/:userId` - Send message to user
 
+### Video Calling
+- `POST /api/video/token` - Generate video call token
+- Socket events: `call-user`, `accept-call`, `reject-call`, `end-call`
+- WebRTC signaling: `webrtc-offer`, `webrtc-answer`, `webrtc-ice-candidate`
+
+## 🎥 Video Calling Architecture
+
+### WebRTC Implementation
+- **Peer-to-Peer Connection**: Direct video/audio transmission between users
+- **Socket.IO Signaling**: Handles call initiation, acceptance, and rejection
+- **STUN Servers**: Google's STUN servers for NAT traversal
+- **Real-time Controls**: Mute, video toggle, and call management
+- **Cross-platform Support**: Works on all modern browsers and devices
+
+### Call Flow
+1. **Call Initiation**: User clicks video button → Socket.IO emits `call-user`
+2. **Call Notification**: Target user receives `incoming-call` event
+3. **Call Acceptance**: Target user accepts → WebRTC negotiation begins
+4. **Media Exchange**: Direct peer-to-peer video/audio streams
+5. **Call Management**: Real-time controls and call status updates
+
+### Technical Benefits
+- **No External Dependencies**: Built with native WebRTC APIs
+- **Cost-free**: No monthly subscription fees
+- **High Performance**: Direct peer-to-peer communication
+- **Secure**: Encrypted media streams
+- **Scalable**: Uses existing Socket.IO infrastructure
+
 ## 🎨 UI/UX Features
 
 - **WhatsApp-inspired Design**: Familiar and intuitive interface
+- **Video Call Interface**: Modern video calling UI with controls
 - **Smooth Animations**: CSS transitions and hover effects
 - **Responsive Layout**: Works on all screen sizes
 - **Dark Theme**: Modern dark color scheme
