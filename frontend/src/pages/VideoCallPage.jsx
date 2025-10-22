@@ -27,6 +27,7 @@ export default function VideoCallPage() {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [currentCallId, setCurrentCallId] = useState(null);
   
   // Video refs
   const localVideoRef = useRef(null);
@@ -60,6 +61,7 @@ export default function VideoCallPage() {
         
         // Generate unique call ID
         const newCallId = `call-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        setCurrentCallId(newCallId);
         
         // Socket event handlers
         socketConnection.on('connect', () => {
@@ -83,6 +85,7 @@ export default function VideoCallPage() {
         
         socketConnection.on('incoming-call', (data) => {
           console.log('Incoming call:', data);
+          setCurrentCallId(data.callId);
           setCallStatus('incoming');
         });
         
@@ -106,7 +109,10 @@ export default function VideoCallPage() {
         
         socketConnection.on('start-webrtc', (data) => {
           console.log('Starting WebRTC negotiation:', data);
-          startWebRTCNegotiation(socketConnection, stream, data.callId, data.fromUserId);
+          // Only start negotiation if we don't already have a peer connection
+          if (!peerConnection) {
+            startWebRTCNegotiation(socketConnection, stream, data.callId, data.fromUserId);
+          }
         });
         
         // WebRTC signaling events
@@ -153,6 +159,8 @@ export default function VideoCallPage() {
   // Start WebRTC negotiation
   const startWebRTCNegotiation = async (socketConnection, stream, callId, remotePeerId) => {
     try {
+      console.log('Creating peer connection for call:', callId, 'with remote peer:', remotePeerId);
+      
       const pc = new RTCPeerConnection({
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -165,6 +173,7 @@ export default function VideoCallPage() {
       // Add local stream
       stream.getTracks().forEach(track => {
         pc.addTrack(track, stream);
+        console.log('Added track to peer connection:', track.kind);
       });
       
       // Handle remote stream
@@ -178,6 +187,7 @@ export default function VideoCallPage() {
       // Handle ICE candidates
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('Sending ICE candidate:', event.candidate);
           socketConnection.emit('webrtc-ice-candidate', {
             callId,
             candidate: event.candidate,
@@ -199,16 +209,19 @@ export default function VideoCallPage() {
         }
       };
       
-      // Create and send offer
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      
-      socketConnection.emit('webrtc-offer', {
-        callId,
-        offer,
-        fromUserId: authUser._id,
-        toUserId: remotePeerId || targetUserId
-      });
+      // Only create offer if we're the caller (have targetUserId)
+      if (targetUserId) {
+        console.log('Creating offer as caller');
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        socketConnection.emit('webrtc-offer', {
+          callId,
+          offer,
+          fromUserId: authUser._id,
+          toUserId: remotePeerId || targetUserId
+        });
+      }
       
     } catch (error) {
       console.error('Error starting WebRTC negotiation:', error);
@@ -217,13 +230,69 @@ export default function VideoCallPage() {
 
   // Handle WebRTC offer
   const handleWebRTCOffer = async (data) => {
-    if (!peerConnection) return;
-    
     try {
+      console.log('Handling WebRTC offer from:', data.fromUserId);
+      
+      // Create peer connection if it doesn't exist
+      if (!peerConnection) {
+        console.log('Creating peer connection for incoming offer');
+        const pc = new RTCPeerConnection({
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        });
+        
+        setPeerConnection(pc);
+        
+        // Add local stream if available
+        if (localStream) {
+          localStream.getTracks().forEach(track => {
+            pc.addTrack(track, localStream);
+            console.log('Added track to peer connection:', track.kind);
+          });
+        }
+        
+        // Handle remote stream
+        pc.ontrack = (event) => {
+          console.log('Received remote stream:', event.streams[0]);
+          setRemoteStream(event.streams[0]);
+          setIsConnected(true);
+          setCallStatus('connected');
+        };
+        
+        // Handle ICE candidates
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('Sending ICE candidate:', event.candidate);
+            socket.emit('webrtc-ice-candidate', {
+              callId: data.callId,
+              candidate: event.candidate,
+              fromUserId: authUser._id,
+              toUserId: data.fromUserId
+            });
+          }
+        };
+        
+        // Handle connection state changes
+        pc.onconnectionstatechange = () => {
+          console.log('WebRTC connection state:', pc.connectionState);
+          if (pc.connectionState === 'connected') {
+            setIsConnected(true);
+            setCallStatus('connected');
+          } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+            setIsConnected(false);
+            setCallStatus('disconnected');
+          }
+        };
+      }
+      
+      console.log('Setting remote description and creating answer');
       await peerConnection.setRemoteDescription(data.offer);
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       
+      console.log('Sending WebRTC answer to:', data.fromUserId);
       socket.emit('webrtc-answer', {
         callId: data.callId,
         answer,
@@ -237,10 +306,15 @@ export default function VideoCallPage() {
 
   // Handle WebRTC answer
   const handleWebRTCAnswer = async (data) => {
-    if (!peerConnection) return;
+    if (!peerConnection) {
+      console.log('No peer connection available for answer');
+      return;
+    }
     
     try {
+      console.log('Handling WebRTC answer from:', data.fromUserId);
       await peerConnection.setRemoteDescription(data.answer);
+      console.log('Remote description set successfully');
     } catch (error) {
       console.error('Error handling WebRTC answer:', error);
     }
@@ -248,10 +322,15 @@ export default function VideoCallPage() {
 
   // Handle ICE candidate
   const handleICECandidate = async (data) => {
-    if (!peerConnection) return;
+    if (!peerConnection) {
+      console.log('No peer connection available for ICE candidate');
+      return;
+    }
     
     try {
+      console.log('Adding ICE candidate from:', data.fromUserId);
       await peerConnection.addIceCandidate(data.candidate);
+      console.log('ICE candidate added successfully');
     } catch (error) {
       console.error('Error handling ICE candidate:', error);
     }
@@ -272,9 +351,9 @@ export default function VideoCallPage() {
 
   const handleLeaveCall = () => {
     // Notify other user that call is ending
-    if (socket && callId) {
+    if (socket && currentCallId) {
       socket.emit('end-call', {
-        callId,
+        callId: currentCallId,
         userId: authUser._id
       });
     }
@@ -293,9 +372,9 @@ export default function VideoCallPage() {
   };
 
   const handleAcceptCall = () => {
-    if (socket && callId) {
+    if (socket && currentCallId) {
       socket.emit('accept-call', {
-        callId,
+        callId: currentCallId,
         userId: authUser._id,
         targetUserId: targetUserId // The caller's ID
       });
@@ -303,9 +382,9 @@ export default function VideoCallPage() {
   };
 
   const handleRejectCall = () => {
-    if (socket && callId) {
+    if (socket && currentCallId) {
       socket.emit('reject-call', {
-        callId,
+        callId: currentCallId,
         userId: authUser._id,
         targetUserId: targetUserId // The caller's ID
       });

@@ -38,7 +38,7 @@ export const handleIncomingCall = (socket, data) => {
 
 // Handle call acceptance
 export const handleCallAccept = (socket, data) => {
-  const { callId, userId } = data;
+  const { callId, userId, targetUserId } = data;
   const call = activeCalls.get(callId);
   
   if (!call) {
@@ -55,13 +55,13 @@ export const handleCallAccept = (socket, data) => {
   // Notify caller that call was accepted
   socket.to(call.callerId).emit('call-accepted', {
     callId,
-    acceptedBy: userId,
+    fromUserId: userId,
     timestamp: new Date()
   });
   
   // Notify both users to start WebRTC negotiation
-  socket.emit('start-webrtc', { callId, peerId: call.callerId });
-  socket.to(call.callerId).emit('start-webrtc', { callId, peerId: userId });
+  socket.emit('start-webrtc', { callId, fromUserId: call.callerId });
+  socket.to(call.callerId).emit('start-webrtc', { callId, fromUserId: userId });
 };
 
 // Handle call rejection
