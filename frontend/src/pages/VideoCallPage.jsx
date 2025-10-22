@@ -28,6 +28,7 @@ export default function VideoCallPage() {
   const [showParticipants, setShowParticipants] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentCallId, setCurrentCallId] = useState(null);
+  const [videoDebugInfo, setVideoDebugInfo] = useState('');
   
   // Video refs
   const localVideoRef = useRef(null);
@@ -184,8 +185,20 @@ export default function VideoCallPage() {
       
           // Handle remote stream
           pc.ontrack = (event) => {
+            console.log('Received remote track event:', event);
+            console.log('Event streams:', event.streams);
+            console.log('Event track:', event.track);
+            
             if (event.streams && event.streams[0]) {
+              console.log('Setting remote stream from ontrack:', event.streams[0]);
+              console.log('Stream tracks:', event.streams[0].getTracks());
               setRemoteStream(event.streams[0]);
+              setIsConnected(true);
+              setCallStatus('connected');
+            } else if (event.track) {
+              console.log('Received track without stream, creating new stream');
+              const newStream = new MediaStream([event.track]);
+              setRemoteStream(newStream);
               setIsConnected(true);
               setCallStatus('connected');
             }
@@ -310,8 +323,20 @@ export default function VideoCallPage() {
       
           // Handle remote stream
           pc.ontrack = (event) => {
+            console.log('Received remote track event (offer handler):', event);
+            console.log('Event streams:', event.streams);
+            console.log('Event track:', event.track);
+            
             if (event.streams && event.streams[0]) {
+              console.log('Setting remote stream from ontrack (offer):', event.streams[0]);
+              console.log('Stream tracks:', event.streams[0].getTracks());
               setRemoteStream(event.streams[0]);
+              setIsConnected(true);
+              setCallStatus('connected');
+            } else if (event.track) {
+              console.log('Received track without stream (offer), creating new stream');
+              const newStream = new MediaStream([event.track]);
+              setRemoteStream(newStream);
               setIsConnected(true);
               setCallStatus('connected');
             }
@@ -436,14 +461,52 @@ export default function VideoCallPage() {
     }
   }, [localStream]);
 
+  // Force video refresh function
+  const forceVideoRefresh = () => {
+    if (remoteVideoRef.current && remoteStream) {
+      console.log('Forcing video refresh...');
+      remoteVideoRef.current.srcObject = null;
+      setTimeout(() => {
+        remoteVideoRef.current.srcObject = remoteStream;
+        remoteVideoRef.current.play().catch(error => {
+          console.error('Error playing remote video after refresh:', error);
+        });
+      }, 100);
+    }
+  };
+
   useEffect(() => {
     if (remoteStream && remoteVideoRef.current) {
+      console.log('Setting remote video stream:', remoteStream);
+      console.log('Remote stream tracks:', remoteStream.getTracks());
+      console.log('Video tracks:', remoteStream.getVideoTracks());
+      console.log('Audio tracks:', remoteStream.getAudioTracks());
+      
+      // Update debug info
+      setVideoDebugInfo(`Stream ID: ${remoteStream.id}, Tracks: ${remoteStream.getTracks().length}, Video: ${remoteStream.getVideoTracks().length}, Audio: ${remoteStream.getAudioTracks().length}`);
+      
       remoteVideoRef.current.srcObject = remoteStream;
       
       // Force play the video
       remoteVideoRef.current.play().catch(error => {
         console.error('Error playing remote video:', error);
       });
+      
+      // Add event listeners for debugging
+      remoteVideoRef.current.onloadedmetadata = () => {
+        console.log('Remote video metadata loaded');
+        setVideoDebugInfo(prev => prev + ' | Metadata loaded');
+      };
+      
+      remoteVideoRef.current.oncanplay = () => {
+        console.log('Remote video can play');
+        setVideoDebugInfo(prev => prev + ' | Can play');
+      };
+      
+      remoteVideoRef.current.onplay = () => {
+        console.log('Remote video started playing');
+        setVideoDebugInfo(prev => prev + ' | Playing');
+      };
     }
   }, [remoteStream]);
 
@@ -828,10 +891,42 @@ export default function VideoCallPage() {
                 muted={false}
                 className="w-full h-full object-cover"
                 onError={(e) => console.error('Remote video error:', e)}
+                onLoadedMetadata={() => console.log('Remote video metadata loaded')}
+                onCanPlay={() => console.log('Remote video can play')}
+                onPlay={() => console.log('Remote video started playing')}
+                onLoadStart={() => console.log('Remote video load started')}
+                onWaiting={() => console.log('Remote video waiting')}
+                onStalled={() => console.log('Remote video stalled')}
+                onSuspend={() => console.log('Remote video suspended')}
+                onAbort={() => console.log('Remote video aborted')}
+                onEmptied={() => console.log('Remote video emptied')}
+                onLoad={() => console.log('Remote video loaded')}
+                onCanPlayThrough={() => console.log('Remote video can play through')}
+                onDurationChange={() => console.log('Remote video duration changed')}
+                onTimeUpdate={() => console.log('Remote video time updated')}
+                onProgress={() => console.log('Remote video progress')}
+                onSeeking={() => console.log('Remote video seeking')}
+                onSeeked={() => console.log('Remote video seeked')}
+                onRateChange={() => console.log('Remote video rate changed')}
+                onVolumeChange={() => console.log('Remote video volume changed')}
+                onPause={() => console.log('Remote video paused')}
+                onEnded={() => console.log('Remote video ended')}
               />
               <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
                 Remote Video ({remoteStream?.getTracks().length || 0} tracks)
               </div>
+              <div className="absolute top-4 right-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                Stream ID: {remoteStream?.id || 'N/A'}
+              </div>
+              <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                {videoDebugInfo}
+              </div>
+              <button
+                onClick={forceVideoRefresh}
+                className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+              >
+                Refresh Video
+              </button>
             </div>
           ) : callStatus === 'connected' ? (
             <div className="text-center">
