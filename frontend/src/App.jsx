@@ -3,6 +3,7 @@ import ChatPage from "./pages/ChatPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import SignUpPage from "./pages/SignUpPage";
+import VideoCallPage from "./pages/VideoCallPage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
 import PageLoader from "./components/PageLoader";
@@ -21,6 +22,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/chat" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
+        <Route path="/video-call" element={authUser ? <VideoCallPage /> : <Navigate to="/login" />} />
         <Route path="/login" element={authUser ? <Navigate to="/chat" /> : <LogInPage />} />
         <Route path="/signup" element={authUser ? <Navigate to="/chat" /> : <SignUpPage />} />
       </Routes>

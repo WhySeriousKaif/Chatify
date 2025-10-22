@@ -1,11 +1,13 @@
-import { XIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
+import { XIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, Video } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 function ChatHeader() {
   const { selectedUser, setSelectedUser, sidebarCollapsed, toggleSidebar, expandSidebar } = useChatStore();
   const { onlineUsers } = useAuthStore();
+  const navigate = useNavigate();
   const isOnline = onlineUsers?.some(user => user._id === selectedUser?._id) || false;
   
   // Debug logging
@@ -51,6 +53,14 @@ function ChatHeader() {
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
+        <button
+          onClick={() => navigate(`/video-call?userId=${selectedUser._id}&userName=${selectedUser.fullName}`)}
+          className="p-2 hover:bg-[var(--wa-item)] rounded-full transition-all duration-200"
+          title={`Call ${selectedUser.fullName}`}
+        >
+          <Video className="w-5 h-5 text-[var(--wa-text-dim)] hover:text-blue-400 transition-colors" />
+        </button>
+
         <button
           onClick={toggleSidebar}
           className="p-2 hover:bg-[var(--wa-item)] rounded-full transition-all duration-200 md:inline-flex inline-flex"

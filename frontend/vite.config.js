@@ -13,6 +13,9 @@ export default defineConfig({
         secure: false,
       },
     },
+    headers: {
+      'Content-Security-Policy': "connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:* https://*.stream-io-video.com https://*.getstream.io https://hint.stream-io-video.com wss://video.stream-io-api.com"
+    }
   },
   build: {
     assetsDir: 'assets',
