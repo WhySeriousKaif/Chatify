@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PhoneOff } from 'lucide-react';
 
 // ZegoCloud credentials from environment
 const ZEGO_APP_ID = parseInt(import.meta.env.VITE_ZEGO_APP_ID) || 447998597;
@@ -29,6 +29,7 @@ export default function VideoCallPage() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCallEndOptions, setShowCallEndOptions] = useState(false);
   const containerRef = useRef(null);
   const initializedRef = useRef(false);
 
@@ -36,11 +37,27 @@ export default function VideoCallPage() {
   const targetUserName = searchParams.get('userName');
   const callId = searchParams.get('callId') || randomID(5);
 
+  // Handle rejoin call
+  const handleRejoinCall = () => {
+    console.log('🔄 Rejoining call...');
+    setShowCallEndOptions(false);
+    setError(null);
+    setLoading(true);
+    initializedRef.current = false;
+    // The useEffect will automatically retry
+  };
+
+  // Handle go to chat
+  const handleGoToChat = () => {
+    console.log('🏠 Going to chat...');
+    navigate('/chat');
+  };
+
   useEffect(() => {
-    if (!authUser) {
-      navigate('/login');
-      return;
-    }
+        if (!authUser) {
+          navigate('/login');
+          return;
+        }
 
     if (!callId) {
       setError('Call ID is missing. Please start a call from the chat page.');
@@ -110,18 +127,8 @@ export default function VideoCallPage() {
           showLeaveButton: true,
           onLeave: () => {
             console.log('👋 Leaving ZegoCloud call...');
-            // Show options when leaving the call
-            const shouldRejoin = window.confirm('Call ended. Would you like to rejoin the call?');
-            if (shouldRejoin) {
-              // Reset the call state and retry
-              setError(null);
-              setLoading(true);
-              initializedRef.current = false;
-              // The useEffect will automatically retry
-            } else {
-              // Go to chat page
-              navigate('/chat');
-            }
+            // Show call end options UI instead of confirm dialog
+            setShowCallEndOptions(true);
           },
         });
 
@@ -130,13 +137,13 @@ export default function VideoCallPage() {
         setLoading(false);
         
         // Add a timeout to check if ZegoCloud UI is actually rendered
-        setTimeout(() => {
+              setTimeout(() => {
           const zegoElements = containerRef.current?.querySelectorAll('[class*="zego"], [class*="Zego"]');
           console.log('🔍 ZegoCloud elements found:', zegoElements?.length || 0);
           if (!zegoElements || zegoElements.length === 0) {
             console.warn('⚠️ ZegoCloud UI not detected in container');
-          }
-        }, 2000);
+                }
+              }, 2000);
 
       } catch (err) {
         console.error('❌ ZegoCloud call initialization error:', err);
@@ -187,7 +194,7 @@ export default function VideoCallPage() {
           <h2 className="text-white text-3xl font-bold mb-4">Connection Error</h2>
           <p className="text-red-200 mb-8 text-lg">{error}</p>
           <div className="flex flex-col gap-4">
-            <button
+            <button 
               onClick={() => {
                 // Retry the call with same parameters
                 setError(null);
@@ -199,8 +206,37 @@ export default function VideoCallPage() {
             >
               🔄 Rejoin Call
             </button>
-            <button
+            <button 
               onClick={() => navigate('/chat')}
+              className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              🏠 Go to Chat
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show call end options if user left the call
+  if (showCallEndOptions) {
+  return (
+      <div className="h-screen w-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-32 h-32 bg-red-500 rounded-full flex items-center justify-center mb-8 mx-auto animate-pulse">
+            <PhoneOff className="w-16 h-16 text-white" />
+          </div>
+          <h2 className="text-white text-3xl font-bold mb-4">You have left the room</h2>
+          <p className="text-gray-300 text-lg mb-8">The video call has ended</p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={handleRejoinCall}
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              🔄 Rejoin Call
+            </button>
+            <button
+              onClick={handleGoToChat}
               className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               🏠 Go to Chat
