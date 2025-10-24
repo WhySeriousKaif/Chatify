@@ -1,24 +1,52 @@
 # Video Calling Feature
 
-This document describes the video calling functionality implemented using Stream's video SDK.
+This document describes the video calling functionality implemented using **ZegoCloud's Video SDK**.
+
+## Overview
+
+Chatify now uses ZegoCloud's professional video calling SDK instead of WebRTC, providing:
+- ✅ More reliable connections
+- ✅ Better quality video/audio
+- ✅ Professional call controls
+- ✅ Built-in participant management
+- ✅ Call statistics and monitoring
+- ✅ Production-ready scalability
 
 ## Features
 
-- **Real-time video calling** using Stream's video SDK
+- **Real-time video calling** using ZegoCloud's video SDK (@zegocloud/zego-uikit-prebuilt)
 - **Multi-participant support** with speaker layout
-- **Call controls** for mute/unmute, video on/off, and call management
+- **Professional call controls** for mute/unmute, video on/off, and call management
 - **Participant list** showing all call participants
 - **Call statistics** and settings panel
 - **Responsive design** that works on desktop and mobile
-- **Integration with existing chat system**
+- **Seamless integration** with existing chat system
+- **Client-side token generation** for simplicity
+- **Automatic call reconnection** and error handling
 
 ## Setup
 
-The video calling feature uses Stream's video SDK with the following configuration:
+### Prerequisites
 
-- **API Key**: `dz6h35yn9rrf`
-- **Token**: Provided via URL parameters or default token
-- **Call ID**: Generated from URL parameters or uses 'default-call'
+1. Create a ZegoCloud account at [zegocloud.com](https://zegocloud.com/)
+2. Get your App ID and Server Secret from the [ZegoCloud Dashboard](https://zegocloud.com/console/)
+3. Add environment variables to your frontend `.env` file
+
+### Environment Variables
+
+Add these to `frontend/.env`:
+
+```env
+VITE_ZEGO_APP_ID=your_zego_app_id
+VITE_ZEGO_SERVER_SECRET=your_zego_server_secret
+```
+
+**Note**: ZegoCloud uses client-side token generation for simplicity.
+
+### Installation
+
+The required packages are already installed:
+- Frontend: `@zegocloud/zego-uikit-prebuilt`
 
 ## Usage
 
@@ -48,53 +76,72 @@ The video call interface includes:
 
 ## Technical Implementation
 
-### Components
+### Backend Architecture
 
-- `VideoCallPage.jsx`: Main video call page component
-- `VideoCallUI`: UI layout component with call controls
-- Integration with existing `ChatHeader.jsx` for call initiation
+#### Stream Configuration (`backend/src/config/stream.js`)
+- Initializes Stream Video client with API credentials
+- Provides token generation functions
+- Handles call creation and management
 
-### Dependencies
+#### API Endpoints
+- `GET /api/video/config` - Get Stream API configuration
+- `POST /api/video/token` - Generate user token (protected route)
+- `POST /api/video/create-call` - Create a video call (protected route)
 
-- `@stream-io/video-react-sdk`: Stream's React video SDK
-- `react-router-dom`: For navigation
-- `lucide-react`: For icons
+### Frontend Architecture
 
-### Stream SDK Integration
+#### Components
 
-The implementation uses Stream's video SDK with:
+- `VideoCallPage.jsx`: Main video call page using Stream SDK
+- `ChatHeader.jsx`: Integrated video call button
 
-- `StreamVideoClient`: Main client for video functionality
-- `StreamCall`: Call instance management
-- `StreamVideo`: Provider component
-- `CallControls`: Built-in call control components
-- `SpeakerLayout`: Video layout component
-- `CallParticipantsList`: Participant management
+#### Dependencies
+
+- `@stream-io/video-react-sdk`: Stream's React video SDK with UI components
+- `react-router-dom`: Navigation between chat and video call
+- `lucide-react`: Icons for UI
+- `axios`: API calls for token generation
+
+### Stream SDK Components Used
+
+The implementation leverages Stream's production-ready components:
+
+- **StreamVideoClient**: Main client for video functionality
+- **StreamCall**: Call instance management and state
+- **StreamVideo**: Provider component for React context
+- **CallControls**: Built-in call control components (mute, video, leave)
+- **SpeakerLayout**: Professional video layout with active speaker detection
+- **CallParticipantsList**: Participant management UI
+- **CallStatsButton**: Call quality and statistics monitoring
 
 ## Configuration
 
-### Environment Variables
-
-You can configure the Stream integration by modifying the constants in `VideoCallPage.jsx`:
-
-```javascript
-const apiKey = 'your-stream-api-key';
-const token = 'your-stream-token';
-```
-
 ### Call ID Generation
 
-Call IDs can be:
-- Passed via URL parameters (`?callId=your-call-id`)
-- Generated automatically using 'default-call'
-- Customized based on user IDs or conversation IDs
+Call IDs are automatically generated in `ChatHeader.jsx` based on user IDs:
 
-## Security Notes
+```javascript
+const callId = `call-${[userId1, userId2].sort().join('-')}`;
+```
 
-- The current implementation uses a hardcoded token for demonstration
-- In production, tokens should be generated server-side for each user
-- Implement proper authentication and authorization
-- Use environment variables for API keys and sensitive configuration
+This ensures both users join the same room regardless of who initiates the call.
+
+### Token Generation Flow
+
+1. User clicks video call button
+2. Frontend requests token from `/api/video/token`
+3. Backend validates user authentication
+4. Backend generates secure token using Stream SDK
+5. Frontend receives token and initializes Stream client
+6. User joins call with authenticated session
+
+## Security Implementation
+
+✅ **Server-side token generation**: Tokens are never exposed in client code
+✅ **Protected routes**: All video endpoints require authentication
+✅ **JWT verification**: User identity verified before token generation
+✅ **Environment variables**: API secrets stored securely in `.env`
+✅ **Token expiration**: Tokens expire after 24 hours by default
 
 ## Future Enhancements
 

@@ -6,7 +6,7 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 
 ### Core Features
 - **Real-time Messaging**: Instant message delivery using Socket.IO
-- **Video Calling**: WebRTC-based video calls with real-time audio/video
+- **Video Calling**: Professional video calls powered by ZegoCloud API
 - **User Authentication**: Secure JWT-based authentication with cookies
 - **Profile Management**: User profiles with image upload via Cloudinary
 - **Contact Management**: Add and manage chat contacts
@@ -14,15 +14,16 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Online Status**: Real-time online/offline user status
 - **Image Sharing**: Send and receive images in chat
 - **Message Status**: Read receipts and delivery confirmation
-- **Call Controls**: Mute, video toggle, and call management
+- **Call Controls**: Professional mute, video toggle, and call management
 - **Responsive Design**: Mobile-first responsive UI
 - **Sound Notifications**: Audio feedback for new messages
 - **Modern UI**: WhatsApp-inspired design with smooth animations
 
 ### Technical Features
-- **Real-time Communication**: Socket.IO for instant messaging and video calling
-- **WebRTC Integration**: Peer-to-peer video/audio communication
+- **Real-time Communication**: Socket.IO for instant messaging
+- **ZegoCloud Integration**: Professional video calling with ZegoCloud SDK
 - **Secure Authentication**: JWT tokens with HTTP-only cookies
+- **Server-side Token Generation**: Secure video call token generation
 - **File Upload**: Cloudinary integration for image sharing
 - **State Management**: Zustand for efficient state management
 - **Modern Styling**: Tailwind CSS with custom animations
@@ -38,7 +39,8 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Express.js** - Web framework
 - **MongoDB** - Database
 - **Mongoose** - ODM for MongoDB
-- **Socket.IO** - Real-time communication and video calling signaling
+- **Socket.IO** - Real-time messaging
+- **ZegoCloud SDK** - Video calling infrastructure
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
 - **Cloudinary** - Image storage
@@ -50,8 +52,8 @@ A modern, full-stack real-time chat application built with the MERN stack (Mongo
 - **Vite** - Build tool
 - **Tailwind CSS** - Styling
 - **Zustand** - State management
-- **Socket.IO Client** - Real-time communication and video calling
-- **WebRTC APIs** - Peer-to-peer video/audio communication
+- **Socket.IO Client** - Real-time messaging
+- **ZegoCloud UIKIt Prebuilt** - Video calling UI components
 - **Axios** - HTTP client
 - **React Router** - Navigation
 - **React Hot Toast** - Notifications
@@ -114,7 +116,9 @@ Chatify/
 - npm (>=8.0.0)
 - MongoDB Atlas account or local MongoDB
 - Cloudinary account
+- ZegoCloud account (for video calling)
 - Resend account (optional)
+- Arcjet account (optional)
 
 ### Installation
 
@@ -144,6 +148,10 @@ Chatify/
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
    
+   # ZegoCloud (for video calling)
+   ZEGO_APP_ID=your_zego_app_id
+   ZEGO_SERVER_SECRET=your_zego_server_secret
+   
    # Resend (for emails)
    RESEND_API_KEY=your_resend_api_key
    EMAIL_FROM=your_email@domain.com
@@ -153,6 +161,8 @@ Chatify/
    ARCJET_KEY=your_arcjet_key
    ARCJET_ENV=development
    ```
+   
+   **For ZegoCloud setup**, see [VIDEO_CALLING.md](./VIDEO_CALLING.md) for detailed instructions.
 
 4. **Start the application**
    ```bash
@@ -215,16 +225,17 @@ npm run dev
 
 ### Video Calling
 1. **Initiate Call**: Click the video button in any chat
-2. **Accept/Reject**: Answer incoming video calls
-3. **Call Controls**: Mute, toggle video, or leave call
-4. **Real-time Video**: See and hear each other in real-time
-5. **Call Management**: View call status and participants
+2. **Professional Interface**: Stream-powered video calling UI
+3. **Call Controls**: Mute, toggle video, view participants, or leave call
+4. **HD Video & Audio**: Crystal-clear video and audio quality
+5. **Participant Management**: View all participants and call statistics
+6. **Automatic Reconnection**: Seamless reconnection on connection drops
 
 ### Features
 - **Online Status**: See which users are currently online
 - **Message History**: View all previous conversations
-- **Video Calling**: High-quality video calls with WebRTC
-- **Call Controls**: Mute, video toggle, and call management
+- **Video Calling**: Professional video calls powered by Stream.io
+- **Advanced Controls**: Mute, video toggle, participant list, and statistics
 - **Sound Notifications**: Hear audio alerts for new messages
 - **Responsive Design**: Use on desktop, tablet, or mobile
 
@@ -253,32 +264,36 @@ npm run dev
 - `POST /api/messages/send/:userId` - Send message to user
 
 ### Video Calling
-- `POST /api/video/token` - Generate video call token
-- Socket events: `call-user`, `accept-call`, `reject-call`, `end-call`
-- WebRTC signaling: `webrtc-offer`, `webrtc-answer`, `webrtc-ice-candidate`
+- `GET /api/video/config` - Get Stream API configuration
+- `POST /api/video/token` - Generate secure user token (protected)
+- `POST /api/video/create-call` - Create a video call (protected)
 
 ## 🎥 Video Calling Architecture
 
-### WebRTC Implementation
-- **Peer-to-Peer Connection**: Direct video/audio transmission between users
-- **Socket.IO Signaling**: Handles call initiation, acceptance, and rejection
-- **STUN Servers**: Google's STUN servers for NAT traversal
-- **Real-time Controls**: Mute, video toggle, and call management
+### Stream.io Integration
+- **Professional Video Infrastructure**: Enterprise-grade video calling
+- **Server-side Token Generation**: Secure authentication flow
+- **Stream SDK**: Production-ready React components
+- **Real-time Controls**: Professional mute, video, and participant management
 - **Cross-platform Support**: Works on all modern browsers and devices
 
 ### Call Flow
-1. **Call Initiation**: User clicks video button → Socket.IO emits `call-user`
-2. **Call Notification**: Target user receives `incoming-call` event
-3. **Call Acceptance**: Target user accepts → WebRTC negotiation begins
-4. **Media Exchange**: Direct peer-to-peer video/audio streams
-5. **Call Management**: Real-time controls and call status updates
+1. **Call Initiation**: User clicks video button in chat
+2. **Token Request**: Frontend requests secure token from backend
+3. **Authentication**: Backend validates user and generates Stream token
+4. **Client Initialization**: Stream client initialized with user token
+5. **Call Join**: User joins call room with unique call ID
+6. **Live Video**: Stream handles all video/audio transmission
+7. **Call Management**: Professional controls and participant management
 
 ### Technical Benefits
-- **No External Dependencies**: Built with native WebRTC APIs
-- **Cost-free**: No monthly subscription fees
-- **High Performance**: Direct peer-to-peer communication
-- **Secure**: Encrypted media streams
-- **Scalable**: Uses existing Socket.IO infrastructure
+- **Enterprise-grade Infrastructure**: Powered by Stream.io
+- **Reliable Connections**: Better than peer-to-peer WebRTC
+- **High Quality**: HD video and crystal-clear audio
+- **Secure**: Server-side token generation and encrypted streams
+- **Scalable**: Handles multiple participants efficiently
+- **Professional UI**: Built-in components for call controls and layouts
+- **Free Tier**: 10,000 minutes/month for development
 
 ## 🎨 UI/UX Features
 

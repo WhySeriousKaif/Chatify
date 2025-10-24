@@ -15,12 +15,20 @@
     "type": "git",
     "url": "git+https://github.com/WhySeriousKaif/Chatify.git"
   },
-  "keywords": ["chat", "messaging", "react", "express"],
+  "keywords": [
+    "chat",
+    "messaging",
+    "react",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/WhySeriousKaif/Chatify/issues"
   },
   "homepage": "https://github.com/WhySeriousKaif/Chatify#readme",
-  "description": "A real-time chat application built with React and Express"
+  "description": "A real-time chat application built with React and Express",
+  "dependencies": {
+    "@zegocloud/zego-uikit-prebuilt": "^2.17.0"
+  }
 }
