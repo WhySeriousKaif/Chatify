@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 function ChatHeader() {
   const { selectedUser, setSelectedUser, sidebarCollapsed, toggleSidebar, expandSidebar } = useChatStore();
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, authUser } = useAuthStore();
   const navigate = useNavigate();
   const isOnline = onlineUsers?.some(user => user._id === selectedUser?._id) || false;
   
@@ -53,12 +53,19 @@ function ChatHeader() {
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
+        {/* Video Call Button */}
         <button
-          onClick={() => navigate(`/video-call?userId=${selectedUser._id}&userName=${selectedUser.fullName}`)}
-          className="p-2 hover:bg-[var(--wa-item)] rounded-full transition-all duration-200"
-          title={`Call ${selectedUser.fullName}`}
+          onClick={() => {
+            console.log('🎥 Video call button clicked!');
+            // Generate unique call ID based on sorted user IDs for consistent room naming
+            const callId = `call-${[authUser._id, selectedUser._id].sort().join('-')}`;
+            console.log('📞 Navigating to video call with ID:', callId);
+            navigate(`/video-call?userId=${selectedUser._id}&userName=${selectedUser.fullName}&callId=${callId}`);
+          }}
+          className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl"
+          title={`Start video call with ${selectedUser.fullName}`}
         >
-          <Video className="w-5 h-5 text-[var(--wa-text-dim)] hover:text-blue-400 transition-colors" />
+          <Video className="w-5 h-5 text-white" />
         </button>
 
         <button

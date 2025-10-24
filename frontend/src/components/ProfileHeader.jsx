@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { LogOutIcon, VolumeOffIcon, Volume2Icon, Video } from "lucide-react";
+import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import { useNavigate } from "react-router-dom";
@@ -17,15 +17,6 @@ function ProfileHeader() {
     window.location.href = '/';
   };
   
-  const handleVideoCall = () => {
-    if (selectedUser) {
-      // Call specific user
-      navigate(`/video-call?userId=${selectedUser._id}&userName=${selectedUser.fullName}`);
-    } else {
-      // General video call
-      navigate('/video-call');
-    }
-  };
   
   const { isSoundEnabled, toggleSound } = useChatStore();
   const [selectedImg, setSelectedImg] = useState(null);
@@ -135,15 +126,6 @@ function ProfileHeader() {
 
         {/* BUTTONS */}
         <div className="flex gap-3 items-center">
-          {/* VIDEO CALL BTN */}
-          <button
-            className="text-[var(--wa-text-dim)] hover:text-blue-400 transition-colors"
-            onClick={handleVideoCall}
-            title={selectedUser ? `Call ${selectedUser.fullName}` : "Start video call"}
-          >
-            <Video className="size-5" />
-          </button>
-
           {/* SOUND TOGGLE BTN */}
           <button
             className="text-[var(--wa-text-dim)] hover:text-[var(--wa-text)] transition-colors"
