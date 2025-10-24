@@ -130,28 +130,32 @@ export default function VideoCallPage() {
           showEndCallDialog: false,
           showCallEndDialog: false,
           showLeaveConfirmDialog: false,
-          onLeave: () => {
-            console.log('👋 Leaving ZegoCloud call...');
-            // Immediately destroy ZegoCloud and show our UI
-            setTimeout(() => {
-              if (zegoCloudRef.current) {
-                zegoCloudRef.current.destroy();
-                zegoCloudRef.current = null;
-              }
-              setShowCallEndOptions(true);
-            }, 100);
-          },
-          onCallEnd: () => {
-            console.log('📞 Call ended by ZegoCloud...');
-            // Immediately destroy ZegoCloud and show our UI
-              setTimeout(() => {
-              if (zegoCloudRef.current) {
-                zegoCloudRef.current.destroy();
-                zegoCloudRef.current = null;
-              }
-              setShowCallEndOptions(true);
-            }, 100);
-          },
+              onLeave: () => {
+                console.log('👋 Leaving ZegoCloud call...');
+                // Clear any error and show our call end options
+                setError(null);
+                setShowCallEndOptions(true);
+                // Destroy ZegoCloud after a short delay
+                setTimeout(() => {
+                  if (zegoCloudRef.current) {
+                    zegoCloudRef.current.destroy();
+                    zegoCloudRef.current = null;
+                  }
+                }, 100);
+              },
+              onCallEnd: () => {
+                console.log('📞 Call ended by ZegoCloud...');
+                // Clear any error and show our call end options
+                setError(null);
+                setShowCallEndOptions(true);
+                // Destroy ZegoCloud after a short delay
+                setTimeout(() => {
+                  if (zegoCloudRef.current) {
+                    zegoCloudRef.current.destroy();
+                    zegoCloudRef.current = null;
+                  }
+                }, 100);
+              },
         });
 
         console.log('✅ Successfully joined ZegoCloud call');
@@ -242,6 +246,10 @@ export default function VideoCallPage() {
             (text.includes('left') && text.includes('room'))) {
           console.log('🔍 Found ZegoCloud call end element:', element, 'Text:', text);
           
+          // Clear any error and show our call end options
+          setError(null);
+          setShowCallEndOptions(true);
+          
           // Immediately hide the element with multiple methods
           element.style.display = 'none !important';
           element.style.visibility = 'hidden !important';
@@ -257,7 +265,6 @@ export default function VideoCallPage() {
             element.parentNode.removeChild(element);
           }
           
-          setShowCallEndOptions(true);
           return;
         }
       }
@@ -267,18 +274,20 @@ export default function VideoCallPage() {
     const interval = setInterval(checkForZegoCallEnd, 50); // Even faster - every 50ms
     
     // Also add a direct DOM override
-    const overrideZegoDialog = () => {
-      // Look for any dialog or modal elements
-      const dialogs = document.querySelectorAll('[role="dialog"], .dialog, .modal, [class*="dialog"], [class*="modal"]');
-      dialogs.forEach(dialog => {
-        const text = dialog.textContent?.toLowerCase() || '';
-        if (text.includes('leave') || text.includes('room') || text.includes('sure')) {
-          console.log('🚫 Found and removing ZegoCloud dialog:', dialog);
-          dialog.remove();
-          setShowCallEndOptions(true);
-        }
-      });
-    };
+        const overrideZegoDialog = () => {
+          // Look for any dialog or modal elements
+          const dialogs = document.querySelectorAll('[role="dialog"], .dialog, .modal, [class*="dialog"], [class*="modal"]');
+          dialogs.forEach(dialog => {
+            const text = dialog.textContent?.toLowerCase() || '';
+            if (text.includes('leave') || text.includes('room') || text.includes('sure')) {
+              console.log('🚫 Found and removing ZegoCloud dialog:', dialog);
+              // Clear any error and show our call end options
+              setError(null);
+              setShowCallEndOptions(true);
+              dialog.remove();
+            }
+          });
+        };
     
     // Run the override immediately and frequently
     const overrideInterval = setInterval(overrideZegoDialog, 25); // Every 25ms
@@ -304,11 +313,13 @@ export default function VideoCallPage() {
       };
     }
 
-    // Also add a global event listener to catch any ZegoCloud call end events
-    const handleGlobalCallEnd = (event) => {
-      console.log('🌍 Global call end event detected:', event);
-      setShowCallEndOptions(true);
-    };
+        // Also add a global event listener to catch any ZegoCloud call end events
+        const handleGlobalCallEnd = (event) => {
+          console.log('🌍 Global call end event detected:', event);
+          // Clear any error and show our call end options
+          setError(null);
+          setShowCallEndOptions(true);
+        };
 
     // Listen for various events that might indicate call end
     window.addEventListener('callEnd', handleGlobalCallEnd);
