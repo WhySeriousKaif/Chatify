@@ -5,7 +5,6 @@ import http from "http";
 import connectDB from "./config/db.js";
 import authRoute from "./routes/auth.route.js";
 import messageRoute from "./routes/message.route.js";
-import videoRoute from "./routes/video.route.js";
 import {ENV} from "./config/env.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -23,6 +22,8 @@ connectDB();
 // Initialize socket.io
 const io = initializeSocket(server);
 
+// ZegoCloud doesn't require backend initialization
+
 
 
 
@@ -33,7 +34,7 @@ app.use(cookieParser());
 app.use(cors({
   origin: ENV.NODE_ENV === "production" 
     ? [ENV.FRONTEND_URL, "https://your-domain.com"] // Add your production domain
-    : "http://localhost:5173",
+    : ["http://localhost:5173", "http://localhost:5174"],
   credentials: true,
 }));
 // serve static files from frontend dist folder
@@ -42,8 +43,6 @@ app.use(express.static(path.join(__dirname, "../frontend/dist")));
 app.use("/api/auth", authRoute);
 
 app.use("/api/messages", messageRoute);
-
-app.use("/api/video", videoRoute);
 
 // make ready for deployment - serve frontend for all routes except API routes
 if (ENV.NODE_ENV === "production") {
