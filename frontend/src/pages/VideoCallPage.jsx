@@ -32,6 +32,7 @@ export default function VideoCallPage() {
   const [showCallEndOptions, setShowCallEndOptions] = useState(false);
   const containerRef = useRef(null);
   const initializedRef = useRef(false);
+  const zegoCloudRef = useRef(null);
 
   const targetUserId = searchParams.get('userId');
   const targetUserName = searchParams.get('userName');
@@ -125,14 +126,34 @@ export default function VideoCallPage() {
           showMicrophoneButton: true,
           showScreenSharingButton: true,
           showLeaveButton: true,
+          // Disable ZegoCloud's default call end dialog completely
+          showEndCallDialog: false,
+          showCallEndDialog: false,
+          showLeaveConfirmDialog: false,
           onLeave: () => {
             console.log('👋 Leaving ZegoCloud call...');
-            // Show call end options UI instead of confirm dialog
+            // Destroy the ZegoCloud instance first
+            if (zegoCloudRef.current) {
+              zegoCloudRef.current.destroy();
+              zegoCloudRef.current = null;
+            }
+            // Show our custom call end options
+            setShowCallEndOptions(true);
+          },
+          onCallEnd: () => {
+            console.log('📞 Call ended by ZegoCloud...');
+            // Destroy the ZegoCloud instance first
+            if (zegoCloudRef.current) {
+              zegoCloudRef.current.destroy();
+              zegoCloudRef.current = null;
+            }
+            // Show our custom call end options
             setShowCallEndOptions(true);
           },
         });
 
         console.log('✅ Successfully joined ZegoCloud call');
+        zegoCloudRef.current = zp; // Store the ZegoCloud instance
         initializedRef.current = true;
         setLoading(false);
         
@@ -168,6 +189,69 @@ export default function VideoCallPage() {
       console.log('🧹 Cleaning up video call...');
       initializedRef.current = false;
     };
+  }, []);
+
+  // Monitor for ZegoCloud call end events and override with custom UI
+  useEffect(() => {
+    const checkForZegoCallEnd = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      // Look for various ZegoCloud call end indicators
+      const callEndSelectors = [
+        '[class*="end"]',
+        '[class*="End"]', 
+        '[class*="call-end"]',
+        '[class*="CallEnd"]',
+        '[class*="left"]',
+        '[class*="Left"]',
+        '[class*="room"]',
+        '[class*="Room"]',
+        'button[class*="rejoin"]',
+        'button[class*="Rejoin"]'
+      ];
+
+      for (const selector of callEndSelectors) {
+        const element = container.querySelector(selector);
+        if (element && element.textContent && (
+          element.textContent.includes('left') || 
+          element.textContent.includes('Left') ||
+          element.textContent.includes('room') ||
+          element.textContent.includes('Room') ||
+          element.textContent.includes('rejoin') ||
+          element.textContent.includes('Rejoin')
+        )) {
+          console.log('🔍 Found ZegoCloud call end element:', element);
+          element.style.display = 'none';
+          setShowCallEndOptions(true);
+          return;
+        }
+      }
+    };
+
+    // Check immediately and then periodically
+    const interval = setInterval(checkForZegoCallEnd, 500);
+    
+    // Also use MutationObserver for real-time detection
+    const container = containerRef.current;
+    if (container) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            checkForZegoCallEnd();
+          }
+        });
+      });
+
+      observer.observe(container, { childList: true, subtree: true });
+
+      return () => {
+        clearInterval(interval);
+        observer.disconnect();
+      };
+    }
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -249,6 +333,15 @@ export default function VideoCallPage() {
 
   return (
     <div className="h-screen w-screen bg-black">
+      {/* CSS to hide ZegoCloud call end dialogs */}
+      <style>{`
+        [class*="end"], [class*="End"], [class*="call-end"], [class*="CallEnd"],
+        [class*="left"], [class*="Left"], [class*="room"], [class*="Room"],
+        button[class*="rejoin"], button[class*="Rejoin"] {
+          display: none !important;
+        }
+      `}</style>
+      
       {/* ZegoCloud Video Container - Full Screen */}
       <div 
         ref={containerRef}
