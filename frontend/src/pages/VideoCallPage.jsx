@@ -203,12 +203,25 @@ export default function VideoCallPage() {
       [class*="left"], [class*="Left"], [class*="room"], [class*="Room"],
       [class*="rejoin"], [class*="Rejoin"], [class*="dialog"], [class*="Dialog"],
       [class*="modal"], [class*="Modal"], [class*="overlay"], [class*="Overlay"],
+      [class*="leave"], [class*="Leave"], [class*="confirm"], [class*="Confirm"],
       button[class*="rejoin"], button[class*="Rejoin"], button[class*="end"], button[class*="End"],
+      button[class*="leave"], button[class*="Leave"], button[class*="confirm"], button[class*="Confirm"],
       div[class*="end"], div[class*="End"], div[class*="left"], div[class*="Left"],
       div[class*="room"], div[class*="Room"], div[class*="rejoin"], div[class*="Rejoin"],
-      /* Hide any element with specific text content */
-      * {
-        position: relative;
+      div[class*="leave"], div[class*="Leave"], div[class*="confirm"], div[class*="Confirm"],
+      /* Hide any element containing specific text */
+      *:contains("Leave the room"), *:contains("leave the room"),
+      *:contains("Are you sure"), *:contains("are you sure"),
+      *:contains("You have left"), *:contains("you have left"),
+      *:contains("rejoin"), *:contains("Rejoin") {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+        z-index: -9999 !important;
       }
     `;
     document.head.appendChild(globalStyle);
@@ -221,15 +234,29 @@ export default function VideoCallPage() {
       const allElements = container.querySelectorAll('*');
       for (const element of allElements) {
         const text = element.textContent?.toLowerCase() || '';
-        if (text.includes('left the room') || 
+        if (text.includes('leave the room') || 
+            text.includes('left the room') || 
             text.includes('you have left') ||
+            text.includes('are you sure') ||
             text.includes('rejoin') ||
             (text.includes('left') && text.includes('room'))) {
           console.log('🔍 Found ZegoCloud call end element:', element, 'Text:', text);
-          element.style.display = 'none';
-          element.style.visibility = 'hidden';
-          element.style.opacity = '0';
-          element.style.pointerEvents = 'none';
+          
+          // Immediately hide the element with multiple methods
+          element.style.display = 'none !important';
+          element.style.visibility = 'hidden !important';
+          element.style.opacity = '0 !important';
+          element.style.pointerEvents = 'none !important';
+          element.style.position = 'absolute !important';
+          element.style.left = '-9999px !important';
+          element.style.top = '-9999px !important';
+          element.style.zIndex = '-9999 !important';
+          
+          // Also try to remove the element entirely
+          if (element.parentNode) {
+            element.parentNode.removeChild(element);
+          }
+          
           setShowCallEndOptions(true);
           return;
         }
@@ -237,7 +264,24 @@ export default function VideoCallPage() {
     };
 
     // Check immediately and then very frequently
-    const interval = setInterval(checkForZegoCallEnd, 100);
+    const interval = setInterval(checkForZegoCallEnd, 50); // Even faster - every 50ms
+    
+    // Also add a direct DOM override
+    const overrideZegoDialog = () => {
+      // Look for any dialog or modal elements
+      const dialogs = document.querySelectorAll('[role="dialog"], .dialog, .modal, [class*="dialog"], [class*="modal"]');
+      dialogs.forEach(dialog => {
+        const text = dialog.textContent?.toLowerCase() || '';
+        if (text.includes('leave') || text.includes('room') || text.includes('sure')) {
+          console.log('🚫 Found and removing ZegoCloud dialog:', dialog);
+          dialog.remove();
+          setShowCallEndOptions(true);
+        }
+      });
+    };
+    
+    // Run the override immediately and frequently
+    const overrideInterval = setInterval(overrideZegoDialog, 25); // Every 25ms
     
     // Also use MutationObserver for real-time detection
     const container = containerRef.current;
@@ -254,6 +298,7 @@ export default function VideoCallPage() {
 
       return () => {
         clearInterval(interval);
+        clearInterval(overrideInterval);
         observer.disconnect();
         document.head.removeChild(globalStyle);
       };
@@ -273,6 +318,7 @@ export default function VideoCallPage() {
 
     return () => {
       clearInterval(interval);
+      clearInterval(overrideInterval);
       if (document.head.contains(globalStyle)) {
         document.head.removeChild(globalStyle);
       }
