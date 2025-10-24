@@ -343,7 +343,7 @@ export default function VideoCallPage() {
     );
   }
 
-  if (error) {
+  if (error && !showCallEndOptions) {
     return (
       <div className="h-screen w-screen bg-gradient-to-br from-red-900 via-pink-900 to-purple-900 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
