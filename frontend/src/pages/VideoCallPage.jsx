@@ -132,23 +132,25 @@ export default function VideoCallPage() {
           showLeaveConfirmDialog: false,
           onLeave: () => {
             console.log('👋 Leaving ZegoCloud call...');
-            // Destroy the ZegoCloud instance first
-            if (zegoCloudRef.current) {
-              zegoCloudRef.current.destroy();
-              zegoCloudRef.current = null;
-            }
-            // Show our custom call end options
-            setShowCallEndOptions(true);
+            // Immediately destroy ZegoCloud and show our UI
+            setTimeout(() => {
+              if (zegoCloudRef.current) {
+                zegoCloudRef.current.destroy();
+                zegoCloudRef.current = null;
+              }
+              setShowCallEndOptions(true);
+            }, 100);
           },
           onCallEnd: () => {
             console.log('📞 Call ended by ZegoCloud...');
-            // Destroy the ZegoCloud instance first
-            if (zegoCloudRef.current) {
-              zegoCloudRef.current.destroy();
-              zegoCloudRef.current = null;
-            }
-            // Show our custom call end options
-            setShowCallEndOptions(true);
+            // Immediately destroy ZegoCloud and show our UI
+              setTimeout(() => {
+              if (zegoCloudRef.current) {
+                zegoCloudRef.current.destroy();
+                zegoCloudRef.current = null;
+              }
+              setShowCallEndOptions(true);
+            }, 100);
           },
         });
 
@@ -193,44 +195,49 @@ export default function VideoCallPage() {
 
   // Monitor for ZegoCloud call end events and override with custom UI
   useEffect(() => {
+    // Inject global CSS to hide ZegoCloud call end dialogs
+    const globalStyle = document.createElement('style');
+    globalStyle.textContent = `
+      /* Global override for ZegoCloud call end dialogs */
+      [class*="end"], [class*="End"], [class*="call-end"], [class*="CallEnd"],
+      [class*="left"], [class*="Left"], [class*="room"], [class*="Room"],
+      [class*="rejoin"], [class*="Rejoin"], [class*="dialog"], [class*="Dialog"],
+      [class*="modal"], [class*="Modal"], [class*="overlay"], [class*="Overlay"],
+      button[class*="rejoin"], button[class*="Rejoin"], button[class*="end"], button[class*="End"],
+      div[class*="end"], div[class*="End"], div[class*="left"], div[class*="Left"],
+      div[class*="room"], div[class*="Room"], div[class*="rejoin"], div[class*="Rejoin"],
+      /* Hide any element with specific text content */
+      * {
+        position: relative;
+      }
+    `;
+    document.head.appendChild(globalStyle);
+
     const checkForZegoCallEnd = () => {
       const container = containerRef.current;
       if (!container) return;
 
-      // Look for various ZegoCloud call end indicators
-      const callEndSelectors = [
-        '[class*="end"]',
-        '[class*="End"]', 
-        '[class*="call-end"]',
-        '[class*="CallEnd"]',
-        '[class*="left"]',
-        '[class*="Left"]',
-        '[class*="room"]',
-        '[class*="Room"]',
-        'button[class*="rejoin"]',
-        'button[class*="Rejoin"]'
-      ];
-
-      for (const selector of callEndSelectors) {
-        const element = container.querySelector(selector);
-        if (element && element.textContent && (
-          element.textContent.includes('left') || 
-          element.textContent.includes('Left') ||
-          element.textContent.includes('room') ||
-          element.textContent.includes('Room') ||
-          element.textContent.includes('rejoin') ||
-          element.textContent.includes('Rejoin')
-        )) {
-          console.log('🔍 Found ZegoCloud call end element:', element);
+      // Look for any element with call end related text
+      const allElements = container.querySelectorAll('*');
+      for (const element of allElements) {
+        const text = element.textContent?.toLowerCase() || '';
+        if (text.includes('left the room') || 
+            text.includes('you have left') ||
+            text.includes('rejoin') ||
+            (text.includes('left') && text.includes('room'))) {
+          console.log('🔍 Found ZegoCloud call end element:', element, 'Text:', text);
           element.style.display = 'none';
+          element.style.visibility = 'hidden';
+          element.style.opacity = '0';
+          element.style.pointerEvents = 'none';
           setShowCallEndOptions(true);
           return;
         }
       }
     };
 
-    // Check immediately and then periodically
-    const interval = setInterval(checkForZegoCallEnd, 500);
+    // Check immediately and then very frequently
+    const interval = setInterval(checkForZegoCallEnd, 100);
     
     // Also use MutationObserver for real-time detection
     const container = containerRef.current;
@@ -248,10 +255,32 @@ export default function VideoCallPage() {
       return () => {
         clearInterval(interval);
         observer.disconnect();
+        document.head.removeChild(globalStyle);
       };
     }
 
-    return () => clearInterval(interval);
+    // Also add a global event listener to catch any ZegoCloud call end events
+    const handleGlobalCallEnd = (event) => {
+      console.log('🌍 Global call end event detected:', event);
+      setShowCallEndOptions(true);
+    };
+
+    // Listen for various events that might indicate call end
+    window.addEventListener('callEnd', handleGlobalCallEnd);
+    window.addEventListener('call-end', handleGlobalCallEnd);
+    window.addEventListener('zegoCallEnd', handleGlobalCallEnd);
+    window.addEventListener('zego-call-end', handleGlobalCallEnd);
+
+    return () => {
+      clearInterval(interval);
+      if (document.head.contains(globalStyle)) {
+        document.head.removeChild(globalStyle);
+      }
+      window.removeEventListener('callEnd', handleGlobalCallEnd);
+      window.removeEventListener('call-end', handleGlobalCallEnd);
+      window.removeEventListener('zegoCallEnd', handleGlobalCallEnd);
+      window.removeEventListener('zego-call-end', handleGlobalCallEnd);
+    };
   }, []);
 
   if (loading) {
@@ -335,9 +364,24 @@ export default function VideoCallPage() {
     <div className="h-screen w-screen bg-black">
       {/* CSS to hide ZegoCloud call end dialogs */}
       <style>{`
+        /* Hide all ZegoCloud call end related elements */
         [class*="end"], [class*="End"], [class*="call-end"], [class*="CallEnd"],
         [class*="left"], [class*="Left"], [class*="room"], [class*="Room"],
-        button[class*="rejoin"], button[class*="Rejoin"] {
+        [class*="rejoin"], [class*="Rejoin"], [class*="dialog"], [class*="Dialog"],
+        [class*="modal"], [class*="Modal"], [class*="overlay"], [class*="Overlay"],
+        button[class*="rejoin"], button[class*="Rejoin"], button[class*="end"], button[class*="End"],
+        div[class*="end"], div[class*="End"], div[class*="left"], div[class*="Left"],
+        div[class*="room"], div[class*="Room"], div[class*="rejoin"], div[class*="Rejoin"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+        
+        /* Hide any element containing "left the room" or "rejoin" text */
+        *:contains("left the room"), *:contains("Left the room"),
+        *:contains("rejoin"), *:contains("Rejoin"),
+        *:contains("You have left"), *:contains("you have left") {
           display: none !important;
         }
       `}</style>
