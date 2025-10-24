@@ -110,8 +110,18 @@ export default function VideoCallPage() {
           showLeaveButton: true,
           onLeave: () => {
             console.log('👋 Leaving ZegoCloud call...');
-            // Directly navigate to chat page when ending the meeting
-            navigate('/chat');
+            // Show options when leaving the call
+            const shouldRejoin = window.confirm('Call ended. Would you like to rejoin the call?');
+            if (shouldRejoin) {
+              // Reset the call state and retry
+              setError(null);
+              setLoading(true);
+              initializedRef.current = false;
+              // The useEffect will automatically retry
+            } else {
+              // Go to chat page
+              navigate('/chat');
+            }
           },
         });
 
@@ -191,9 +201,9 @@ export default function VideoCallPage() {
             </button>
             <button
               onClick={() => navigate('/chat')}
-              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              Back to Chat
+              🏠 Go to Chat
             </button>
           </div>
         </div>
