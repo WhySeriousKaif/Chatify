@@ -37,9 +37,11 @@ function ChatContainer() {
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* Beautiful message background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 via-teal-900/95 to-cyan-900/95 backdrop-blur-sm" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.2)_0%,transparent_50%)]" />
+      {/* Beautiful message background - same as landing page */}
+      <div className="absolute inset-0 bg-slate-900" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]" />
+      <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px]" />
+      <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
       
       <div className="relative z-10 flex flex-col h-full">
         <ChatHeader />
