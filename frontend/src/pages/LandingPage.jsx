@@ -2,12 +2,13 @@ import { Link } from "react-router";
 
 function LandingPage() {
   return (
-    <div className="min-h-screen wa-app wa-wallpaper relative overflow-hidden">
-      {/* decorative blobs */}
-      <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-emerald-500/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-24 -right-24 w-[420px] h-[420px] bg-cyan-500/10 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-slate-900 relative flex flex-col p-4 overflow-hidden">
+      {/* DECORATORS - GRID BG & GLOW SHAPES */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]" />
+      <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px]" />
+      <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
 
-      <header className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4">
+      <header className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 relative z-10">
         <div className="flex items-center gap-3">
           <img 
             src="/logo.png" 
@@ -19,22 +20,22 @@ function LandingPage() {
             }}
           />
           <div className="w-9 h-9 rounded-xl bg-cyan-600 flex items-center justify-center text-white font-bold" style={{display: 'none'}}>C</div>
-          <span className="text-[var(--wa-text)] font-semibold text-lg">Chatify</span>
+          <span className="text-white font-semibold text-lg">Chatify</span>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 relative z-10 overflow-y-auto">
         <div className="text-center">
-          <h1 className="text-[var(--wa-text)] text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight">Chat that feels familiar</h1>
-          <p className="text-[var(--wa-text-dim)] mt-4 sm:mt-6 text-lg sm:text-xl max-w-3xl mx-auto">A clean, WhatsApp-like interface with real-time messaging, media, replies and more. Built with modern tooling and tuned for focus.</p>
+          <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight">Chat that feels familiar</h1>
+          <p className="text-slate-300 mt-4 sm:mt-6 text-lg sm:text-xl max-w-3xl mx-auto">A clean, WhatsApp-like interface with real-time messaging, media, replies and more. Built with modern tooling and tuned for focus.</p>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup" className="px-8 py-4 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 text-center font-semibold text-lg">Get started</Link>
-            <Link to="/login" className="px-8 py-4 rounded-full bg-[var(--wa-item)] text-[var(--wa-text)] hover:bg-[var(--wa-item-hover)] text-center font-semibold text-lg">I have an account</Link>
+            <Link to="/signup" className="px-8 py-4 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 text-center font-semibold text-lg transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-cyan-500/25">Get started</Link>
+            <Link to="/login" className="px-8 py-4 rounded-full bg-slate-800/50 text-white hover:bg-slate-700/50 text-center font-semibold text-lg transition-all duration-200 hover:scale-105 border border-slate-600 hover:border-slate-500">I have an account</Link>
           </div>
-          <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-sm text-[var(--wa-text-dim)] max-w-4xl mx-auto">
-            <div className="p-4 rounded-lg bg-[var(--wa-item)]">Familiar layout and shortcuts</div>
-            <div className="p-4 rounded-lg bg-[var(--wa-item)]">Image sharing & replies</div>
-            <div className="p-4 rounded-lg bg-[var(--wa-item)]">Lightweight & responsive</div>
+          <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-sm text-slate-300 max-w-4xl mx-auto">
+            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:bg-slate-700/50 transition-all duration-200">Familiar layout and shortcuts</div>
+            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:bg-slate-700/50 transition-all duration-200">Image sharing & replies</div>
+            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:bg-slate-700/50 transition-all duration-200">Lightweight & responsive</div>
           </div>
         </div>
 
