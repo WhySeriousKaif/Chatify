@@ -38,8 +38,8 @@ function ChatContainer() {
   return (
     <div className="flex flex-col h-full relative">
       {/* Beautiful message background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1)_0%,transparent_50%)]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-indigo-900/95 to-blue-900/95 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.2)_0%,transparent_50%)]" />
       
       <div className="relative z-10 flex flex-col h-full">
         <ChatHeader />
