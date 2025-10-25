@@ -29,46 +29,48 @@ function ContactList() {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-4 px-2">
         <MessageCircleIcon className="w-5 h-5 text-cyan-400" />
         <h3 className="text-slate-200 font-medium">All Contacts</h3>
       </div>
       
-      {allContacts.map((contact) => (
-        <div
-          key={contact._id}
-          className="group bg-slate-700/30 hover:bg-cyan-500/10 p-4 rounded-xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/20 border border-slate-600/30 hover:border-cyan-500/50 backdrop-blur-sm"
-          onClick={() => { setSelectedUser(contact); collapseSidebar(); }}
-        >
-          <div className="flex items-center gap-3">
-            <div className={`avatar ${onlineUsers?.includes(contact._id) ? "online" : "offline"}`}>
-              <div className="size-12 rounded-full overflow-hidden">
-                <img 
-                  src={contact.profilePic || "/avatar.png"} 
-                  alt={contact.fullName}
-                  className="w-full h-full object-cover"
-                />
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800 space-y-2 px-2">
+        {allContacts.map((contact) => (
+          <div
+            key={contact._id}
+            className="group bg-slate-700/30 hover:bg-cyan-500/10 p-4 rounded-xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/20 border border-slate-600/30 hover:border-cyan-500/50 backdrop-blur-sm"
+            onClick={() => { setSelectedUser(contact); collapseSidebar(); }}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`avatar ${onlineUsers?.includes(contact._id) ? "online" : "offline"}`}>
+                <div className="size-12 rounded-full overflow-hidden">
+                  <img 
+                    src={contact.profilePic || "/avatar.png"} 
+                    alt={contact.fullName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <h4 className="text-slate-200 font-medium truncate group-hover:text-cyan-300 transition-colors">
-                {contact.fullName}
-              </h4>
-              <p className="text-slate-400 text-sm truncate">
-                {contact.email}
-              </p>
-            </div>
+              
+              <div className="flex-1 min-w-0">
+                <h4 className="text-slate-200 font-medium truncate group-hover:text-cyan-300 transition-colors">
+                  {contact.fullName}
+                </h4>
+                <p className="text-slate-400 text-sm truncate">
+                  {contact.email}
+                </p>
+              </div>
 
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="w-8 h-8 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                <MessageCircleIcon className="w-4 h-4 text-cyan-400" />
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-8 h-8 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                  <MessageCircleIcon className="w-4 h-4 text-cyan-400" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
