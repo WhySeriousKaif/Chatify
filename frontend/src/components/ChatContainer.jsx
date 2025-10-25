@@ -55,8 +55,8 @@ function ChatContainer() {
                   <div
                     className={`chat-bubble relative rounded-2xl px-4 py-3 text-[14px] leading-relaxed max-w-[75%] shadow-lg transition-all duration-200 hover:shadow-xl backdrop-blur-sm border ${
                       msg.senderId === authUser._id
-                        ? "bg-gradient-to-r from-emerald-500/90 to-teal-500/90 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40 border-emerald-400/30 hover:border-emerald-300/50"
-                        : "bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-pink-900/95 text-slate-100 shadow-indigo-700/25 hover:shadow-indigo-700/40 border-indigo-500/30 hover:border-indigo-400/50"
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-cyan-500/25 hover:shadow-cyan-500/40 border-cyan-400/30 hover:border-cyan-300/50"
+                        : "bg-gradient-to-r from-slate-700 to-slate-600 text-slate-100 shadow-slate-700/25 hover:shadow-slate-700/40 border-slate-500/30 hover:border-slate-400/50"
                     }`}
                     onDoubleClick={() => setReplyToMessage(msg)}
                   >
