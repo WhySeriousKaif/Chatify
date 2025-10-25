@@ -140,11 +140,17 @@ export const deleteMessage = async (req, res) => {
     const receiverSocketId = getReceiverSocketId(message.receiverId);
     const senderSocketId = getReceiverSocketId(message.senderId);
     
+    console.log('🔴 Emitting messageDeleted:', { messageId, deletedAt: message.deletedAt });
+    console.log('🔴 Receiver socket ID:', receiverSocketId);
+    console.log('🔴 Sender socket ID:', senderSocketId);
+    
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("messageDeleted", { messageId, deletedAt: message.deletedAt });
+      console.log('🔴 Emitted to receiver');
     }
     if (senderSocketId) {
       io.to(senderSocketId).emit("messageDeleted", { messageId, deletedAt: message.deletedAt });
+      console.log('🔴 Emitted to sender');
     }
 
     res.status(200).json({ message: "Message deleted successfully." });
@@ -186,11 +192,17 @@ export const reactToMessage = async (req, res) => {
     const receiverSocketId = getReceiverSocketId(message.receiverId);
     const senderSocketId = getReceiverSocketId(message.senderId);
     
+    console.log('😊 Emitting messageReacted:', { messageId, reactions: message.reactions });
+    console.log('😊 Receiver socket ID:', receiverSocketId);
+    console.log('😊 Sender socket ID:', senderSocketId);
+    
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("messageReacted", { messageId, reactions: message.reactions });
+      console.log('😊 Emitted to receiver');
     }
     if (senderSocketId) {
       io.to(senderSocketId).emit("messageReacted", { messageId, reactions: message.reactions });
+      console.log('😊 Emitted to sender');
     }
 
     res.status(200).json({ reactions: message.reactions });

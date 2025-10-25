@@ -18,6 +18,7 @@ function ChatContainer() {
     subscribeToMessages,
     unsubscribeFromMessages,
     setReplyToMessage,
+    set: setMessages,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -28,6 +29,16 @@ function ChatContainer() {
       console.log('Deleting message:', messageId);
       const response = await axiosInstance.delete(`/messages/delete/${messageId}`);
       console.log('Delete response:', response);
+      
+      // Update UI immediately as fallback
+      const currentMessages = messages;
+      const updatedMessages = currentMessages.map(msg => 
+        msg._id === messageId 
+          ? { ...msg, isDeleted: true, deletedAt: new Date() }
+          : msg
+      );
+      setMessages({ messages: updatedMessages });
+      
       toast.success("Message deleted");
     } catch (error) {
       console.error('Delete error:', error);
@@ -42,6 +53,15 @@ function ChatContainer() {
       console.log('Reacting to message:', messageId, emoji);
       const response = await axiosInstance.post(`/messages/react/${messageId}`, { emoji });
       console.log('React response:', response);
+      
+      // Update UI immediately as fallback
+      const currentMessages = messages;
+      const updatedMessages = currentMessages.map(msg => 
+        msg._id === messageId 
+          ? { ...msg, reactions: response.data.reactions }
+          : msg
+      );
+      setMessages({ messages: updatedMessages });
     } catch (error) {
       console.error('React error:', error);
       console.error('Error response:', error.response?.data);

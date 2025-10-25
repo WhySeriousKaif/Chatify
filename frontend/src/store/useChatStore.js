@@ -115,22 +115,26 @@ export const useChatStore = create((set, get) => ({
     });
 
     socket.on("messageDeleted", (data) => {
+      console.log('🔴 Socket: messageDeleted received', data);
       const currentMessages = get().messages;
       const updatedMessages = currentMessages.map(msg => 
         msg._id === data.messageId 
           ? { ...msg, isDeleted: true, deletedAt: data.deletedAt }
           : msg
       );
+      console.log('🔴 Updated messages after delete:', updatedMessages);
       set({ messages: updatedMessages });
     });
 
     socket.on("messageReacted", (data) => {
+      console.log('😊 Socket: messageReacted received', data);
       const currentMessages = get().messages;
       const updatedMessages = currentMessages.map(msg => 
         msg._id === data.messageId 
           ? { ...msg, reactions: data.reactions }
           : msg
       );
+      console.log('😊 Updated messages after react:', updatedMessages);
       set({ messages: updatedMessages });
     });
   },
