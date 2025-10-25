@@ -74,6 +74,7 @@ export const useChatStore = create((set, get) => ({
       receiverId: selectedUser._id,
       text: messageData.text,
       image: messageData.image,
+      video: messageData.video,
       replyTo: get().replyToMessage ? { _id: get().replyToMessage._id, text: get().replyToMessage.text } : undefined,
       createdAt: new Date().toISOString(),
       isOptimistic: true, // flag to identify optimistic messages (optional)
@@ -112,11 +113,33 @@ export const useChatStore = create((set, get) => ({
         notificationSound.play().catch((e) => console.log("Audio play failed:", e));
       }
     });
+
+    socket.on("messageDeleted", (data) => {
+      const currentMessages = get().messages;
+      const updatedMessages = currentMessages.map(msg => 
+        msg._id === data.messageId 
+          ? { ...msg, isDeleted: true, deletedAt: data.deletedAt }
+          : msg
+      );
+      set({ messages: updatedMessages });
+    });
+
+    socket.on("messageReacted", (data) => {
+      const currentMessages = get().messages;
+      const updatedMessages = currentMessages.map(msg => 
+        msg._id === data.messageId 
+          ? { ...msg, reactions: data.reactions }
+          : msg
+      );
+      set({ messages: updatedMessages });
+    });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
     socket.off("newMessage");
+    socket.off("messageDeleted");
+    socket.off("messageReacted");
   },
 }));

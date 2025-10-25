@@ -36,12 +36,12 @@ export const getMessagesByUserId = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text, image, video } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    if (!text && !image) {
-      return res.status(400).json({ message: "Text or image is required." });
+    if (!text && !image && !video) {
+      return res.status(400).json({ message: "Text, image, or video is required." });
     }
     if (senderId.equals(receiverId)) {
       return res.status(400).json({ message: "Cannot send messages to yourself." });
@@ -51,11 +51,19 @@ export const sendMessage = async (req, res) => {
       return res.status(404).json({ message: "Receiver not found." });
     }
 
-    let imageUrl;
+    let imageUrl, videoUrl;
     if (image) {
       // upload base64 image to cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
+    }
+    if (video) {
+      // upload base64 video to cloudinary
+      const uploadResponse = await cloudinary.uploader.upload(video, {
+        resource_type: "video",
+        chunk_size: 6000000,
+      });
+      videoUrl = uploadResponse.secure_url;
     }
 
     const newMessage = new Message({
@@ -63,6 +71,7 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
+      video: videoUrl,
     });
 
     await newMessage.save();
@@ -103,6 +112,90 @@ export const getChatPartners = async (req, res) => {
     res.status(200).json(chatPartners);
   } catch (error) {
     console.error("Error in getChatPartners: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: "Message not found." });
+    }
+
+    // Only sender can delete their own message
+    if (!message.senderId.equals(userId)) {
+      return res.status(403).json({ message: "You can only delete your own messages." });
+    }
+
+    // Soft delete the message
+    message.isDeleted = true;
+    message.deletedAt = new Date();
+    await message.save();
+
+    // Emit to both users
+    const receiverSocketId = getReceiverSocketId(message.receiverId);
+    const senderSocketId = getReceiverSocketId(message.senderId);
+    
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("messageDeleted", { messageId, deletedAt: message.deletedAt });
+    }
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageDeleted", { messageId, deletedAt: message.deletedAt });
+    }
+
+    res.status(200).json({ message: "Message deleted successfully." });
+  } catch (error) {
+    console.log("Error in deleteMessage controller: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const reactToMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user._id;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: "Message not found." });
+    }
+
+    // Check if user already reacted with this emoji
+    const existingReaction = message.reactions.find(
+      reaction => reaction.userId.equals(userId) && reaction.emoji === emoji
+    );
+
+    if (existingReaction) {
+      // Remove the reaction
+      message.reactions = message.reactions.filter(
+        reaction => !(reaction.userId.equals(userId) && reaction.emoji === emoji)
+      );
+    } else {
+      // Add the reaction
+      message.reactions.push({ userId, emoji });
+    }
+
+    await message.save();
+
+    // Emit to both users
+    const receiverSocketId = getReceiverSocketId(message.receiverId);
+    const senderSocketId = getReceiverSocketId(message.senderId);
+    
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("messageReacted", { messageId, reactions: message.reactions });
+    }
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageReacted", { messageId, reactions: message.reactions });
+    }
+
+    res.status(200).json({ reactions: message.reactions });
+  } catch (error) {
+    console.log("Error in reactToMessage controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };

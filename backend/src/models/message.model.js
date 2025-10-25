@@ -20,6 +20,27 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    video: {
+      type: String,
+    },
+    reactions: [{
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      emoji: {
+        type: String,
+        required: true,
+      },
+    }],
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
