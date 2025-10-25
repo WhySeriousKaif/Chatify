@@ -16,8 +16,14 @@ const ChatPage = () => {
   const { allContacts, chats, isUsersLoading } = useChatStore();
 
   return (
-    <div className="relative h-screen w-full md:max-w-6xl md:m-auto rounded-none md:rounded-2xl overflow-hidden py-0 md:py-6">
-      <BorderAnimatedContainer>
+    <div className="relative h-screen w-full bg-slate-900">
+      {/* DECORATORS - GRID BG & GLOW SHAPES */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f62e_1px,transparent_1px),linear-gradient(to_bottom,#3b82f62e_1px,transparent_1px)] bg-[size:14px_24px]" />
+      <div className="absolute top-0 -left-4 size-96 bg-purple-500 opacity-20 blur-[100px]" />
+      <div className="absolute bottom-0 -right-4 size-96 bg-blue-500 opacity-20 blur-[100px]" />
+      
+      <div className="relative h-screen w-full md:max-w-6xl md:m-auto rounded-none md:rounded-2xl overflow-hidden py-0 md:py-6 z-10">
+        <BorderAnimatedContainer>
         {/* left side */}
         <div className={`${sidebarCollapsed ? 'w-0 md:w-0' : 'w-full md:w-80'} wa-sidebar border-r border-slate-800 p-0 h-full md:rounded-l-2xl transition-all duration-300 overflow-hidden ${sidebarCollapsed ? '' : 'absolute inset-0 md:relative z-20'} flex flex-col`}>
           <ProfileHeader />
@@ -31,7 +37,8 @@ const ChatPage = () => {
         <div className={`${sidebarCollapsed ? 'flex' : 'hidden md:flex'} flex-1 flex-col wa-wallpaper border-l border-slate-800 md:rounded-r-2xl` }>
           {selectedUser ? <ChatContainer /> :<NoConversationPlaceholder/>}
         </div>
-      </BorderAnimatedContainer>
+        </BorderAnimatedContainer>
+      </div>
     </div>
   );
 };

@@ -36,9 +36,14 @@ function ChatContainer() {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <ChatHeader />
-      <div className="flex-1 px-4 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+    <div className="flex flex-col h-full relative">
+      {/* Beautiful message background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1)_0%,transparent_50%)]" />
+      
+      <div className="relative z-10 flex flex-col h-full">
+        <ChatHeader />
+        <div className="flex-1 px-4 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
         {messages.length > 0 && !isMessagesLoading ? (
           <div className="w-full space-y-3 pr-2">
             {messages.map((msg, index) => (
@@ -48,10 +53,10 @@ function ChatContainer() {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div
-                  className={`chat-bubble relative rounded-2xl px-4 py-3 text-[14px] leading-relaxed max-w-[75%] shadow-lg transition-all duration-200 hover:shadow-xl ${
+                  className={`chat-bubble relative rounded-2xl px-4 py-3 text-[14px] leading-relaxed max-w-[75%] shadow-lg transition-all duration-200 hover:shadow-xl backdrop-blur-sm border ${
                     msg.senderId === authUser._id
-                      ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-cyan-500/25 hover:shadow-cyan-500/40"
-                      : "bg-gradient-to-r from-slate-700 to-slate-600 text-slate-100 shadow-slate-700/25 hover:shadow-slate-700/40"
+                      ? "bg-gradient-to-r from-cyan-500/90 to-blue-500/90 text-white shadow-cyan-500/25 hover:shadow-cyan-500/40 border-cyan-400/30 hover:border-cyan-300/50"
+                      : "bg-gradient-to-r from-slate-700/90 to-slate-600/90 text-slate-100 shadow-slate-700/25 hover:shadow-slate-700/40 border-slate-500/30 hover:border-slate-400/50"
                   }`}
                   onDoubleClick={() => setReplyToMessage(msg)}
                 >
@@ -95,9 +100,10 @@ function ChatContainer() {
         ) : (
           <NoChatHistoryPlaceholder name={selectedUser?.fullName} />
         )}
-      </div>
+        </div>
 
-      <MessageInput />
+        <MessageInput />
+      </div>
     </div>
   );
 }
