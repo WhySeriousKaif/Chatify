@@ -18,7 +18,7 @@ function App() {
   }, []);
   if (isCheckingAuth) return <PageLoader />
   return (
-    <div className="h-screen w-screen wa-app wa-wallpaper relative overflow-hidden">
+    <div className="min-h-screen w-screen wa-app wa-wallpaper relative">
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/chat" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
