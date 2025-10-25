@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import toast from "react-hot-toast";
-import { ImageIcon, SendIcon, XIcon, VideoIcon } from "lucide-react";
+import { ImageIcon, SendIcon, XIcon, VideoIcon, Camera } from "lucide-react";
 
 function MessageInput() {
   const { playRandomKeyStrokeSound } = useKeyboardSound();
@@ -171,13 +171,13 @@ function MessageInput() {
             <ImageIcon className="w-5 h-5" />
           </button>
 
-          <button
-            type="button"
-            onClick={() => videoInputRef.current?.click()}
-            className={`p-3 rounded-full transition-colors ${videoPreview ? "bg-cyan-900/40 text-cyan-300" : "text-[var(--wa-text-dim)] hover:bg-[var(--wa-item)]"}`}
-          >
-            <VideoIcon className="w-5 h-5" />
-          </button>
+    <button
+      type="button"
+      onClick={() => videoInputRef.current?.click()}
+      className={`p-3 rounded-full transition-colors ${videoPreview ? "bg-cyan-900/40 text-cyan-300" : "text-[var(--wa-text-dim)] hover:bg-[var(--wa-item)]"}`}
+    >
+      <Camera className="w-5 h-5" />
+    </button>
           
           <button
             type="submit"
