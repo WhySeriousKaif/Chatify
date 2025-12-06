@@ -15,6 +15,7 @@ const server = http.createServer(app);
 const __dirname = path.resolve();
 
 
+
 const PORT = ENV.PORT || 3000;
 
 // ✅ Connect to MongoDB BEFORE starting server
@@ -29,12 +30,14 @@ const io = initializeSocket(server);
 
 
 
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
+
 app.use(cors({
   origin: ENV.NODE_ENV === "production" 
-    ? [ENV.FRONTEND_URL, "https://your-domain.com"] // Add your production domain
+    ? (ENV.FRONTEND_URL ? [ENV.FRONTEND_URL, ENV.CLIENT_URL].filter(Boolean) : true) // Allow production frontend URLs or all if not set
     : ["http://localhost:5173", "http://localhost:5174"],
   credentials: true,
 }));

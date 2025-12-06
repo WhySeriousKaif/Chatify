@@ -8,12 +8,16 @@ export const generateToken = (userId,res) => {
         expiresIn: '1d', // Token expires in 1 day
     });
     // Set token in HTTP-only cookie
-    res.cookie('token', token, {
+    const cookieOptions = {
         httpOnly: true,
-        secure: ENV.NODE_ENV === 'production', // Use secure cookies in production
-        sameSite: 'strict',
         maxAge: 24 * 60 * 60 * 1000, // 1 day
-        
-    });
+        sameSite: ENV.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-site in production
+    };
+    
+    if (ENV.NODE_ENV === 'production') {
+        cookieOptions.secure = true; // Required for HTTPS and sameSite: 'none'
+    }
+    
+    res.cookie('token', token, cookieOptions);
     return token;
 };

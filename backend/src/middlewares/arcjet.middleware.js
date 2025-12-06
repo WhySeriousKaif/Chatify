@@ -1,7 +1,14 @@
 import aj from "../config/arcjet.js";
 import { isSpoofedBot } from "@arcjet/inspect";
+import { ENV } from "../config/env.js";
 
 export const arcjetProtection = async (req, res, next) => {
+  // Skip Arcjet if key is not configured
+  if (!ENV.ARCJET_KEY) {
+    return next();
+  }
+  
+
   try {
     const decision = await aj.protect(req);
 
