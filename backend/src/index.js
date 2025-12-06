@@ -14,6 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const __dirname = path.resolve();
 
+
 const PORT = ENV.PORT || 3000;
 
 // ✅ Connect to MongoDB BEFORE starting server

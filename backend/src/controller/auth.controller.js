@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { ENV } from "../config/env.js";
 import { cloudinary } from "../config/cloudinary.js";
+import mongoose from "mongoose";
 
 export const signUp = async (req, res) => {
   // Handle signup logic here
@@ -11,6 +12,14 @@ export const signUp = async (req, res) => {
 
   
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.error("Database not connected. ReadyState:", mongoose.connection.readyState);
+      return res.status(500).json({ 
+        message: "Database connection failed. Please check MongoDB configuration." 
+      });
+    }
+
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -60,13 +69,33 @@ export const signUp = async (req, res) => {
     }
   } catch (error) {
     console.error("Error during user registration:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error stack:", error.stack);
+    
+    // Check if it's a database connection error
+    if (error.message && error.message.includes("buffering timed out")) {
+      return res.status(500).json({ 
+        message: "Database connection failed. Please check MongoDB connection." 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: "Server error",
+      error: ENV.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 export const logIn = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.error("Database not connected. ReadyState:", mongoose.connection.readyState);
+      return res.status(500).json({ 
+        message: "Database connection failed. Please check MongoDB configuration." 
+      });
+    }
+
     // Check if email and password are provided
     if (!email || !password) {
       return res
@@ -99,7 +128,19 @@ export const logIn = async (req, res) => {
     });
   } catch (err) {
     console.error("Error in login Controller:", err);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error stack:", err.stack);
+    
+    // Check if it's a database connection error
+    if (err.message && err.message.includes("buffering timed out")) {
+      return res.status(500).json({ 
+        message: "Database connection failed. Please check MongoDB connection." 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: "Internal server error",
+      error: ENV.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 };
 export const logOut = async (_, res) => {
