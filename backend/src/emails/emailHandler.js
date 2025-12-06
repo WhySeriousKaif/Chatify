@@ -3,6 +3,12 @@ import { createWelcomeEmailTemplate } from './emailTemplat.js';
 
 
 export const senderWelcomeEmail = async (email, name, clientURL) => {
+    // Skip if Resend is not configured
+    if (!resendClient) {
+        console.log("⚠️  Email service not configured, skipping welcome email");
+        return;
+    }
+
     try{
         const {data,error} = await resendClient.emails.send({
             from: `${sender.name} <${sender.email}>`,
