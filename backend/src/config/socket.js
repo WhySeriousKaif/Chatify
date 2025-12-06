@@ -15,9 +15,13 @@ import {
 let io;
 
 export const initializeSocket = (server) => {
+  const corsOrigin = ENV.NODE_ENV === "production" 
+    ? (ENV.FRONTEND_URL || ENV.CLIENT_URL || true)
+    : ["http://localhost:5173", "http://localhost:5174"];
+
   io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: corsOrigin,
       credentials: true,
     },
   });
