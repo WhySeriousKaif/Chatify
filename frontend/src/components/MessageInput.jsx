@@ -177,7 +177,7 @@ function MessageInput() {
       className={`p-3 rounded-full transition-colors ${videoPreview ? "bg-cyan-900/40 text-cyan-300" : "text-[var(--wa-text-dim)] hover:bg-[var(--wa-item)]"}`}
     >
       <Camera className="w-5 h-5" />
-    </button>
+          </button>
           
           <button
             type="submit"

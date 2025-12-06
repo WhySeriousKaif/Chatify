@@ -47,7 +47,7 @@ export default function VideoCallPage() {
     initializedRef.current = false;
     // The useEffect will automatically retry
   };
-
+  
   // Handle go to chat
   const handleGoToChat = () => {
     console.log('🏠 Going to chat...');
@@ -149,11 +149,11 @@ export default function VideoCallPage() {
                 setError(null);
                 setShowCallEndOptions(true);
                 // Destroy ZegoCloud after a short delay
-                setTimeout(() => {
+              setTimeout(() => {
                   if (zegoCloudRef.current) {
                     zegoCloudRef.current.destroy();
                     zegoCloudRef.current = null;
-                  }
+              }
                 }, 100);
               },
         });
@@ -176,8 +176,8 @@ export default function VideoCallPage() {
         console.error('❌ ZegoCloud call initialization error:', err);
         setError(err.message || 'Failed to initialize video call. Please try again.');
         setLoading(false);
-      }
-    };
+    }
+  };
 
     // Add a small delay to ensure container is ready
     const timer = setTimeout(() => {
@@ -233,7 +233,7 @@ export default function VideoCallPage() {
     const checkForZegoCallEnd = () => {
       const container = containerRef.current;
       if (!container) return;
-
+          
       // Look for any element with call end related text
       const allElements = container.querySelectorAll('*');
       for (const element of allElements) {
@@ -249,7 +249,7 @@ export default function VideoCallPage() {
           // Clear any error and show our call end options
           setError(null);
           setShowCallEndOptions(true);
-          
+
           // Immediately hide the element with multiple methods
           element.style.display = 'none !important';
           element.style.visibility = 'hidden !important';
@@ -285,7 +285,7 @@ export default function VideoCallPage() {
               setError(null);
               setShowCallEndOptions(true);
               dialog.remove();
-            }
+          }
           });
         };
     
@@ -319,7 +319,7 @@ export default function VideoCallPage() {
           // Clear any error and show our call end options
           setError(null);
           setShowCallEndOptions(true);
-        };
+  };
 
     // Listen for various events that might indicate call end
     window.addEventListener('callEnd', handleGlobalCallEnd);
@@ -337,7 +337,7 @@ export default function VideoCallPage() {
       window.removeEventListener('call-end', handleGlobalCallEnd);
       window.removeEventListener('zegoCallEnd', handleGlobalCallEnd);
       window.removeEventListener('zego-call-end', handleGlobalCallEnd);
-    };
+  };
   }, []);
 
   if (loading) {

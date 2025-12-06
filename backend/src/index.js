@@ -16,7 +16,8 @@ const __dirname = path.resolve();
 
 
 
-const PORT = ENV.PORT || 3000;
+// Use process.env.PORT directly (many hosting platforms set this automatically)
+const PORT = process.env.PORT || ENV.PORT || 3000;
 
 // ✅ Connect to MongoDB BEFORE starting server
 connectDB();
@@ -25,11 +26,6 @@ connectDB();
 const io = initializeSocket(server);
 
 // ZegoCloud doesn't require backend initialization
-
-
-
-
-
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -55,8 +51,8 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
-
-server.listen(PORT, () => {
+// Start server - bind to 0.0.0.0 to accept connections from any network interface
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server is running on port ${PORT}`);
   if (ENV.NODE_ENV === 'production') {
     console.log(`🌐 Production mode enabled`);
