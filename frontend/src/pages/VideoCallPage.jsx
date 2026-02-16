@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { Loader2, PhoneOff } from 'lucide-react';
+import { axiosInstance } from '../lib/axios';
 
 // ZegoCloud credentials from environment
 const ZEGO_APP_ID = parseInt(import.meta.env.VITE_ZEGO_APP_ID) || 447998597;
@@ -66,8 +67,43 @@ export default function VideoCallPage() {
       return;
     }
 
-    // Only initialize once
-    if (initializedRef.current) return;
+    // Only initialize once - set flag immediately to prevent multiple calls
+    if (initializedRef.current) {
+      console.log('⏭️ Already initialized, skipping...');
+      return;
+    }
+    
+    // Set flag immediately to prevent race conditions
+    initializedRef.current = true;
+    
+    // Wait for container to be available
+    const waitForContainer = () => {
+      return new Promise((resolve, reject) => {
+        // Check immediately
+        if (containerRef.current) {
+          resolve();
+          return;
+        }
+        
+        let attempts = 0;
+        const maxAttempts = 40; // 40 * 50ms = 2 seconds max
+        
+        const checkInterval = setInterval(() => {
+          attempts++;
+          if (containerRef.current) {
+            clearInterval(checkInterval);
+            resolve();
+            return;
+          }
+          
+          // If we've tried enough times, reject
+          if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            reject(new Error('Video container not found after waiting. Please refresh the page.'));
+          }
+        }, 50);
+      });
+    };
     
     const initializeZegoCall = async () => {
       try {
@@ -88,14 +124,67 @@ export default function VideoCallPage() {
         
         setLoading(true);
 
-        // Generate Kit Token for ZegoCloud
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        // Wait for container to be ready (with proper error handling)
+        try {
+          await waitForContainer();
+        } catch (containerError) {
+          throw new Error('Video container not available. The page may still be loading. Please wait a moment and try again.');
+        }
+        
+        if (!containerRef.current) {
+          throw new Error('Video container not available. Please refresh the page.');
+        }
+
+        // Try to generate token from backend first (more secure), fallback to client-side
+        // Note: Backend token generation is optional - if it fails, we'll use client-side
+        // This is a silent operation - errors are expected and handled gracefully
+        let kitToken;
+        
+        try {
+          // First, try backend token generation (more secure for production)
+          const tokenResponse = await axiosInstance.post('/video/zego/token', {
+            roomId: callId,
+            userId: authUser._id,
+            userName: authUser.fullName || 'User'
+          }, {
+            timeout: 2000, // 2 second timeout (faster fallback)
+            validateStatus: () => true // Accept all status codes, don't throw
+          });
+
+          if (tokenResponse.status === 200 && tokenResponse.data.success && tokenResponse.data.token) {
+            // Use backend-generated token
+            console.log('✅ Backend token received');
+            // Note: ZegoUIKitPrebuilt expects a KitToken object, but if backend returns a token string,
+            // we might need to create the token object differently
+            // For now, fallback to client-side generation as ZegoUIKitPrebuilt needs specific format
+            // TODO: Implement proper KitToken format from backend if needed
+          }
+          // If backend token generation fails (500, etc.), silently fall back to client-side
+        } catch (backendError) {
+          // Backend token generation failed - this is completely expected if credentials aren't set
+          // Silently fallback to client-side generation - no logging needed
+          // This is a normal flow, not an error condition
+        }
+
+        // Generate Kit Token for ZegoCloud (client-side fallback)
+        // Validate server secret before generating
+        if (!ZEGO_SERVER_SECRET || ZEGO_SERVER_SECRET === "26959573c3088d4ae7f3d08e5450001d") {
+          console.warn('⚠️ Using default/hardcoded ZEGO_SERVER_SECRET. This may not work in production!');
+          console.warn('⚠️ Please set VITE_ZEGO_SERVER_SECRET environment variable with your actual secret.');
+          throw new Error('ZegoCloud Server Secret not configured. Please set VITE_ZEGO_SERVER_SECRET environment variable with your actual ZegoCloud Server Secret from https://console.zegocloud.com/');
+        }
+
+        kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
           ZEGO_APP_ID, // App ID as number
           ZEGO_SERVER_SECRET,
           callId,
           authUser._id,
           authUser.fullName || 'User'
         );
+
+        if (!kitToken) {
+          throw new Error('Failed to generate ZegoCloud token. Please check your ZEGO_APP_ID and ZEGO_SERVER_SECRET environment variables.');
+        }
 
         console.log('✅ ZegoCloud token generated:', kitToken ? 'SUCCESS' : 'FAILED');
 
@@ -160,7 +249,6 @@ export default function VideoCallPage() {
 
         console.log('✅ Successfully joined ZegoCloud call');
         zegoCloudRef.current = zp; // Store the ZegoCloud instance
-        initializedRef.current = true;
         setLoading(false);
         
         // Add a timeout to check if ZegoCloud UI is actually rendered
@@ -174,25 +262,65 @@ export default function VideoCallPage() {
 
       } catch (err) {
         console.error('❌ ZegoCloud call initialization error:', err);
-        setError(err.message || 'Failed to initialize video call. Please try again.');
+        
+        // Reset initialization flag so user can retry
+        initializedRef.current = false;
+        
+        // Provide more helpful error messages based on error type
+        let errorMessage = err.message || 'Failed to initialize video call.';
+        
+        // Check for common ZegoCloud errors
+        if (err.message?.includes('20021') || err.message?.includes('authentication') || err.message?.includes('ZegoCloud Server Secret')) {
+          errorMessage = 'Video call authentication failed. Error code: 20021\n\nPlease set your ZegoCloud credentials:\n1. Go to https://console.zegocloud.com/\n2. Get your App ID and Server Secret\n3. Add to frontend/.env:\n   VITE_ZEGO_APP_ID=your_app_id\n   VITE_ZEGO_SERVER_SECRET=your_server_secret\n4. Restart the server';
+        } else if (err.message?.includes('200101')) {
+          errorMessage = 'Video call server error. Error code: 200101\n\nPlease verify your ZegoCloud App ID and Server Secret are correct in your environment variables.';
+        } else if (err.message?.includes('Invalid') || err.message?.includes('ZEGO')) {
+          errorMessage = 'ZegoCloud configuration error: ' + err.message + '\n\nPlease check your VITE_ZEGO_APP_ID and VITE_ZEGO_SERVER_SECRET environment variables.';
+        }
+        
+        setError(errorMessage);
         setLoading(false);
     }
   };
 
-    // Add a small delay to ensure container is ready
+    // Add a small delay to ensure DOM is ready and container ref is set
     const timer = setTimeout(() => {
-      initializeZegoCall();
+      // Double check container is available before starting
+      if (containerRef.current || document.getElementById('zego-video-container')) {
+        initializeZegoCall();
+      } else {
+        // Try one more time after a short delay
+        setTimeout(() => {
+          if (containerRef.current || document.getElementById('zego-video-container')) {
+            initializeZegoCall();
+          } else {
+            setError('Video container not found. Please refresh the page.');
+            setLoading(false);
+          }
+        }, 300);
+      }
     }, 100);
 
     return () => {
       clearTimeout(timer);
+      // Don't reset initializedRef here - let cleanup useEffect handle it
     };
-  }, [authUser, callId, navigate]);
+  }, [authUser?._id, callId]); // Remove navigate from dependencies to prevent re-runs
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       console.log('🧹 Cleaning up video call...');
+      // Destroy ZegoCloud instance if it exists
+      if (zegoCloudRef.current) {
+        try {
+          zegoCloudRef.current.destroy();
+          zegoCloudRef.current = null;
+        } catch (e) {
+          console.warn('Error destroying ZegoCloud instance:', e);
+        }
+      }
+      // Reset initialization flag
       initializedRef.current = false;
     };
   }, []);
@@ -340,57 +468,9 @@ export default function VideoCallPage() {
   };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="h-screen w-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
-          </div>
-          <h2 className="text-white text-2xl font-bold mb-2">Connecting to Call</h2>
-          <p className="text-blue-200 text-lg">Setting up your video call...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !showCallEndOptions) {
-    return (
-      <div className="h-screen w-screen bg-gradient-to-br from-red-900 via-pink-900 to-purple-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="w-24 h-24 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-6">
-            <div className="text-red-400 text-6xl">⚠️</div>
-          </div>
-          <h2 className="text-white text-3xl font-bold mb-4">Connection Error</h2>
-          <p className="text-red-200 mb-8 text-lg">{error}</p>
-          <div className="flex flex-col gap-4">
-            <button 
-              onClick={() => {
-                // Retry the call with same parameters
-                setError(null);
-                setLoading(true);
-                initializedRef.current = false;
-                // The useEffect will automatically retry
-              }}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              🔄 Rejoin Call
-            </button>
-            <button 
-              onClick={() => navigate('/chat')}
-              className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              🏠 Go to Chat
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show call end options if user left the call
+  // Show call end options if user left the call (separate full screen view)
   if (showCallEndOptions) {
-  return (
+    return (
       <div className="h-screen w-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-32 h-32 bg-red-500 rounded-full flex items-center justify-center mb-8 mx-auto animate-pulse">
@@ -399,13 +479,13 @@ export default function VideoCallPage() {
           <h2 className="text-white text-3xl font-bold mb-4">You have left the room</h2>
           <p className="text-gray-300 text-lg mb-8">The video call has ended</p>
           <div className="flex gap-4 justify-center">
-            <button
+            <button 
               onClick={handleRejoinCall}
               className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               🔄 Rejoin Call
             </button>
-            <button
+            <button 
               onClick={handleGoToChat}
               className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
@@ -417,8 +497,9 @@ export default function VideoCallPage() {
     );
   }
 
+  // Always render container (so ref is available) with overlays for loading/error states
   return (
-    <div className="h-screen w-screen bg-black">
+    <div className="h-screen w-screen bg-black relative">
       {/* CSS to hide ZegoCloud call end dialogs */}
       <style>{`
         /* Hide all ZegoCloud call end related elements */
@@ -443,10 +524,11 @@ export default function VideoCallPage() {
         }
       `}</style>
       
-      {/* ZegoCloud Video Container - Full Screen */}
+      {/* ZegoCloud Video Container - Always rendered so ref is available */}
       <div 
         ref={containerRef}
         className="h-full w-full"
+        id="zego-video-container"
         style={{
           minHeight: '100vh',
           backgroundColor: '#000',
@@ -455,6 +537,52 @@ export default function VideoCallPage() {
           overflow: 'hidden'
         }}
       />
+      
+      {/* Loading overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center z-50">
+            <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+            <h2 className="text-white text-2xl font-bold mb-2">Connecting to Call</h2>
+            <p className="text-blue-200 text-lg">Setting up your video call...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error overlay */}
+      {error && !showCallEndOptions && (
+        <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-pink-900 to-purple-900 flex items-center justify-center z-50">
+          <div className="text-center max-w-md mx-auto p-8">
+            <div className="w-24 h-24 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+              <div className="text-red-400 text-6xl">⚠️</div>
+          </div>
+            <h2 className="text-white text-3xl font-bold mb-4">Connection Error</h2>
+            <p className="text-red-200 mb-8 text-lg whitespace-pre-line">{error}</p>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => {
+                  // Retry the call with same parameters
+                  setError(null);
+                  setLoading(true);
+                  initializedRef.current = false;
+                  // The useEffect will automatically retry
+                }}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                🔄 Rejoin Call
+              </button>
+              <button
+                onClick={() => navigate('/chat')}
+                className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                🏠 Go to Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

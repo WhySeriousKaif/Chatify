@@ -9,6 +9,7 @@ export const senderWelcomeEmail = async (email, name, clientURL) => {
         return;
     }
 
+
     try{
         const {data,error} = await resendClient.emails.send({
             from: `${sender.name} <${sender.email}>`,
@@ -26,3 +27,4 @@ export const senderWelcomeEmail = async (email, name, clientURL) => {
     console.log("Error in sending welcome email:", err);
    }
 }
+
