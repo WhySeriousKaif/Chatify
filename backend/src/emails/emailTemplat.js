@@ -1,11 +1,11 @@
 export function createWelcomeEmailTemplate(name, clientURL) {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Chatify</title>
+      <title>Welcome to MeetLy</title>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </head>
     <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
@@ -23,7 +23,7 @@ export function createWelcomeEmailTemplate(name, clientURL) {
               <div style="font-size: 36px;">💬</div>
             </div>
             
-            <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">Welcome to Chatify!</h1>
+            <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">Welcome to MeetLy!</h1>
             <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0; font-size: 18px; font-weight: 400;">Your journey starts here</p>
           </div>
           
@@ -70,7 +70,7 @@ export function createWelcomeEmailTemplate(name, clientURL) {
             <!-- Support Section -->
             <div style="text-align: center; padding: 30px; background: #f7fafc; border-radius: 16px; margin: 30px 0;">
               <h3 style="margin: 0 0 15px; font-size: 18px; font-weight: 600; color: #2d3748;">Need Help?</h3>
-              <p style="margin: 0 0 20px; color: #718096; font-size: 15px;">Our support team is here to help you get the most out of Chatify.</p>
+              <p style="margin: 0 0 20px; color: #718096; font-size: 15px;">Our support team is here to help you get the most out of MeetLy.</p>
               <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <a href="#" style="color: #667eea; text-decoration: none; font-weight: 500; font-size: 14px; padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">Help Center</a>
                 <a href="#" style="color: #667eea; text-decoration: none; font-weight: 500; font-size: 14px; padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">Contact Support</a>
@@ -80,14 +80,14 @@ export function createWelcomeEmailTemplate(name, clientURL) {
             <!-- Footer -->
             <div style="text-align: center; padding-top: 30px; border-top: 1px solid #e2e8f0;">
               <p style="margin: 0 0 15px; color: #718096; font-size: 15px;">Happy chatting! 🎉</p>
-              <p style="margin: 0; color: #a0aec0; font-size: 14px;">Best regards,<br><strong style="color: #2d3748;">The Chatify Team</strong></p>
+              <p style="margin: 0; color: #a0aec0; font-size: 14px;">Best regards,<br><strong style="color: #2d3748;">The MeetLy Team</strong></p>
             </div>
           </div>
         </div>
         
         <!-- Bottom Footer -->
         <div style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.8); font-size: 12px;">
-          <p style="margin: 0 0 10px;">© 2025 Chatify. All rights reserved.</p>
+          <p style="margin: 0 0 10px;">© 2025 MeetLy. All rights reserved.</p>
           <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
             <a href="#" style="color: rgba(255, 255, 255, 0.8); text-decoration: none;">Privacy Policy</a>
             <a href="#" style="color: rgba(255, 255, 255, 0.8); text-decoration: none;">Terms of Service</a>
@@ -98,4 +98,4 @@ export function createWelcomeEmailTemplate(name, clientURL) {
     </body>
     </html>
     `;
-  }
+}

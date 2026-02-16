@@ -20,7 +20,7 @@ function LandingPage() {
             }}
           />
           <div className="w-9 h-9 rounded-xl bg-cyan-600 flex items-center justify-center text-white font-bold" style={{ display: 'none' }}>C</div>
-          <span className="text-white font-semibold text-lg">Chatify</span>
+          <span className="text-white font-semibold text-lg">MeetLy</span>
         </div>
       </header>
 
@@ -48,13 +48,13 @@ function LandingPage() {
             <div className="relative rounded-2xl sm:rounded-3xl border-2 border-slate-600 overflow-hidden shadow-2xl bg-gradient-to-br from-slate-800 to-slate-900">
               <div className="wa-header px-3 sm:px-8 py-3 sm:py-5 border-b border-slate-600 text-[var(--wa-text-dim)] text-center font-semibold text-sm sm:text-lg flex items-center justify-center gap-2">
                 <span className="text-cyan-400">✨</span>
-                <span>See Chatify in Action</span>
+                <span>See MeetLy in Action</span>
                 <span className="text-emerald-400">✨</span>
               </div>
               <div className="wa-wallpaper p-1 sm:p-4">
                 <img
                   src="/MessageView.png"
-                  alt="Chatify Message View Preview"
+                  alt="MeetLy Message View Preview"
                   className="w-full h-auto rounded-2xl shadow-2xl border border-slate-600/50 object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -73,7 +73,14 @@ function LandingPage() {
           </div>
         </div>
       </main>
-    </div>
+
+
+      <footer className="relative z-10 py-8 text-center border-t border-slate-800/50 mt-12">
+        <p className="text-slate-500 text-sm">
+          &copy; 2026 <span className="text-cyan-500 font-medium">MeetLy</span>. All rights reserved.
+        </p>
+      </footer>
+    </div >
   );
 }
 

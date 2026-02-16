@@ -39,7 +39,7 @@ const NoConversationPlaceholder = () => {
         {/* Text content */}
         <div className='space-y-4'>
           <h3 className='text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>
-            Welcome to Chatify
+            Welcome to MeetLy
           </h3>
           <p className='text-slate-400 text-lg leading-relaxed'>
             Your conversations are waiting to begin

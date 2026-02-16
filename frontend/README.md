@@ -1,6 +1,6 @@
-# Chatify Frontend - React Application
+# MeetLy Frontend - React Application
 
-A modern, responsive React frontend for the Chatify real-time chat application, built with Vite, Tailwind CSS, and Zustand for state management.
+A modern, responsive React frontend for the MeetLy real-time chat application, built with Vite, Tailwind CSS, and Zustand for state management.
 
 ## 🏗️ Architecture Overview
 
