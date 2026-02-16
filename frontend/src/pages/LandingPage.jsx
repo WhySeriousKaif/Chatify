@@ -5,21 +5,21 @@ function LandingPage() {
     <div className="min-h-screen bg-slate-900 relative p-4">
       {/* DECORATORS - GRID BG & GLOW SHAPES */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]" />
-      <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px]" />
+      <div className="absolute top-0 -left-4 size-96 bg-emerald-500 opacity-20 blur-[100px]" />
       <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
 
       <header className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 relative z-10">
         <div className="flex items-center gap-3">
-          <img 
-            src="/logo.png" 
-            alt="Chatify Logo" 
+          <img
+            src="/logo.png"
+            alt="Chatify Logo"
             className="w-9 h-9 rounded-xl"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className="w-9 h-9 rounded-xl bg-cyan-600 flex items-center justify-center text-white font-bold" style={{display: 'none'}}>C</div>
+          <div className="w-9 h-9 rounded-xl bg-cyan-600 flex items-center justify-center text-white font-bold" style={{ display: 'none' }}>C</div>
           <span className="text-white font-semibold text-lg">Chatify</span>
         </div>
       </header>
@@ -61,7 +61,7 @@ function LandingPage() {
                     e.target.nextSibling.style.display = 'flex';
                   }}
                 />
-                <div className="w-full rounded-2xl shadow-2xl border border-slate-600/50 bg-slate-800 flex items-center justify-center" style={{display: 'none'}}>
+                <div className="w-full rounded-2xl shadow-2xl border border-slate-600/50 bg-slate-800 flex items-center justify-center" style={{ display: 'none' }}>
                   <div className="text-center text-slate-400">
                     <div className="text-6xl mb-4">📱</div>
                     <div className="text-xl font-semibold">Chat Preview</div>

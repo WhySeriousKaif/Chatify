@@ -1,14 +1,11 @@
 // Video calling routes
 import express from 'express';
-import { generateZegoToken, checkZegoConfig } from '../controller/video.controller.js';
+import { generateStreamToken } from '../controller/stream.controller.js';
 
 const videoRoute = express.Router();
 
-// Generate ZegoCloud token for video calling
-videoRoute.post('/zego/token', generateZegoToken);
-
-// Check ZegoCloud configuration
-videoRoute.get('/zego/config', checkZegoConfig);
+// Generate Stream Video token
+videoRoute.post('/token', generateStreamToken);
 
 export default videoRoute;
 

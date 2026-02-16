@@ -9,7 +9,7 @@ function ChatHeader() {
   const { onlineUsers, authUser } = useAuthStore();
   const navigate = useNavigate();
   const isOnline = onlineUsers?.some(user => user._id === selectedUser?._id) || false;
-  
+
   // Debug logging
   console.log("ChatHeader - selectedUser:", selectedUser?.fullName, selectedUser?._id);
   console.log("ChatHeader - onlineUsers:", onlineUsers);
@@ -35,8 +35,8 @@ function ChatHeader() {
       <div className="flex items-center space-x-3">
         <div className={`avatar ${onlineUsers?.includes(selectedUser?._id) ? "online" : "offline"}`}>
           <div className="size-12 rounded-full overflow-hidden">
-            <img 
-              src={selectedUser.profilePic || "/avatar.png"} 
+            <img
+              src={selectedUser.profilePic || "/avatar.png"}
               alt={selectedUser.fullName}
               className="w-full h-full object-cover"
             />
@@ -62,7 +62,7 @@ function ChatHeader() {
             console.log('📞 Navigating to video call with ID:', callId);
             navigate(`/video-call?userId=${selectedUser._id}&userName=${selectedUser.fullName}&callId=${callId}`);
           }}
-          className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl"
+          className="p-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl"
           title={`Start video call with ${selectedUser.fullName}`}
         >
           <Video className="w-5 h-5 text-white" />
@@ -80,7 +80,7 @@ function ChatHeader() {
           )}
         </button>
 
-        <button 
+        <button
           onClick={() => { setSelectedUser(null); expandSidebar(); }}
           className="p-2 hover:bg-[var(--wa-item)] rounded-full transition-all duration-200"
         >

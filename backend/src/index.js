@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { initializeSocket } from "./config/socket.js";
 
+
 const app = express();
 const server = http.createServer(app);
 const __dirname = path.resolve();

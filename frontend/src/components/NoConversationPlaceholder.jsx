@@ -31,8 +31,8 @@ const NoConversationPlaceholder = () => {
           <div className='absolute -top-2 -right-2 w-6 h-6 bg-yellow-400/20 rounded-full flex items-center justify-center animate-ping'>
             <SparklesIcon className='w-3 h-3 text-yellow-400' />
           </div>
-          <div className='absolute -bottom-1 -left-1 w-4 h-4 bg-pink-400/20 rounded-full flex items-center justify-center animate-ping delay-300'>
-            <SparklesIcon className='w-2 h-2 text-pink-400' />
+          <div className='absolute -bottom-1 -left-1 w-4 h-4 bg-emerald-400/20 rounded-full flex items-center justify-center animate-ping delay-300'>
+            <SparklesIcon className='w-2 h-2 text-emerald-400' />
           </div>
         </div>
 
@@ -51,15 +51,15 @@ const NoConversationPlaceholder = () => {
 
         {/* Action buttons */}
         <div className='flex flex-col sm:flex-row gap-4 w-full'>
-          <button 
+          <button
             onClick={handleFindContacts}
             className='flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-xl font-medium hover:bg-cyan-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20'
           >
             <UsersIcon className='w-5 h-5' />
             Find Contacts
           </button>
-          
-          <button 
+
+          <button
             onClick={(e) => { e.preventDefault(); setActiveTab('chats'); navigate('/chat'); }}
             className='flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[var(--wa-item)] text-[var(--wa-text)] rounded-xl font-medium border border-slate-800 hover:bg-[var(--wa-item-hover)] transition-all duration-300'>
             <MessageCircleIcon className='w-5 h-5' />

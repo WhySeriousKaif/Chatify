@@ -15,6 +15,6 @@ export const ENV = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   ARCJET_KEY: process.env.ARCJET_KEY,
   ARCJET_ENV: process.env.ARCJET_ENV,
-  ZEGO_APP_ID: process.env.ZEGO_APP_ID,
-  ZEGO_SERVER_SECRET: process.env.ZEGO_SERVER_SECRET,
+  STREAM_API_KEY: process.env.STREAM_API_KEY,
+  STREAM_SECRET_KEY: process.env.STREAM_SECRET_KEY || process.env.STREAM_API_SECRET,
 };
